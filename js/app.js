@@ -1,42 +1,24 @@
-var frames = {
+var sequences = {
   celery: {
     title: "Celery Man",
     windows: [
-      { id: "celery1", position: { top: "15%", left: "5%" } },
-      { id: "celery2", position: { top: "20%", left: "45%" } },
+      // { id: "celery1", position: { top: "15%", left: "5%" } },
+      // { id: "celery2", position: { top: "20%", left: "45%" } },
       { id: "celery3", position: { top: "40%", left: "25%" } },
       { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
-    renderer: function (app) {
-      app.audioStop();
-      app.audioStart("celery");
-
-      this.windows
-        .map((source) => app.createVideoWindow(source))
-        .forEach((win) => (win.style.display = "block"));
-
-      application.changeTextPrompt("4d3d3d3 Engaged.");
-    },
+    prompt: "Yes, Paul.",
   },
 
-  celery: {
+  celery_engaged: {
     title: "Celery Man",
     windows: [
       { id: "celery1", position: { top: "15%", left: "5%" } },
       { id: "celery2", position: { top: "20%", left: "45%" } },
-      { id: "celery3", position: { top: "40%", left: "25%" } },
-      { id: "celery4", position: { top: "10%", left: "65%" } },
+      // { id: "celery3", position: { top: "40%", left: "25%" } },
+      // { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
-    renderer: function (app) {
-      app.audioStop();
-      app.audioStart("celery");
-
-      this.windows
-        .map((source) => app.createVideoWindow(source))
-        .forEach((win) => (win.style.display = "block"));
-
-      application.changeTextPrompt("4d3d3d3 Engaged.");
-    },
+    prompt: "4d3d3d3 Engaged.",
   },
 
   oyster: {
@@ -46,17 +28,7 @@ var frames = {
       { id: "oyster2", position: { top: "25%", left: "5%" } },
       { id: "oyster3", position: { top: "40%", left: "45%" } },
     ],
-    renderer: function (app) {
-      app.audioStop();
-      app.audioStart("celery");
-      app.audioStart("oyster");
-
-      this.windows
-        .map((source) => app.createVideoWindow(source))
-        .forEach((win) => (win.style.display = "block"));
-
-      application.changeTextPrompt("add sequence: OYSTER");
-    },
+    prompt: "add sequence: OYSTER",
   },
 
   tayne: {
@@ -68,18 +40,7 @@ var frames = {
       { id: "tayne4", position: { top: "25%", left: "20%" } },
       { id: "tayne5", position: { top: "5%", left: "50%" } },
     ],
-    renderer: function (app) {
-      app.audioStop();
-      app.audioStart("tayne");
-
-      this.windows
-        .map((source) => app.createVideoWindow(source))
-        .forEach((win) => (win.style.display = "block"));
-
-      application.changeTextPrompt(
-        "I have a BETA sequence I have been working on",
-      );
-    },
+    prompt: "I have a BETA sequence I have been working on",
   },
 
   mozza: {
@@ -88,17 +49,12 @@ var frames = {
       { id: "mozza1", position: { top: "10%", left: "5%" } },
       { id: "mozza2", position: { top: "30%", left: "35%" } },
     ],
-    renderer: function (app) {
-      app.audioStop();
-      app.audioStart("celery");
-
-      this.windows
-        .map((source) => app.createVideoWindow(source))
-        .forEach((win) => (win.style.display = "block"));
-
-      application.changeTextPrompt("Good morning, Paul.");
-    },
+    prompt: "",
   },
+};
+
+var state = {
+  loaded: null,
 };
 
 var application = {
@@ -114,9 +70,19 @@ var application = {
     }
   },
 
-  showSequence: async function (sequence) {
-    var windows = frames[sequence].windows,
-      renderer = frames[sequence].renderer.bind(frames[sequence]);
+  sequenceRenderer: function (sequence) {
+    sequence.windows
+      .map((source) => application.createVideoWindow(source))
+      .forEach((win) => (win.style.display = "block"));
+
+    application.changeTextPrompt(sequence.prompt);
+  },
+
+  showSequence: async function (sequence_name) {
+    state.loaded = sequence_name;
+
+    application.audioStop();
+    application.audioStart(sequence_name);
 
     application.embedStop();
     application.hide("#window-original");
@@ -126,14 +92,17 @@ var application = {
 
     await application.loadingWindow("#window-loader progress");
 
-    application.finishSequence(sequence);
+    const sequence = sequences[sequence_name];
 
-    windows.forEach((source) => application.buildVideo(sequence, source.id));
+    sequence.windows.forEach((source) =>
+      application.buildVideo(sequence, source),
+    );
+    application.sequenceRenderer(sequence);
+    application.finishSequence(sequence);
   },
 
   buildVideo: function (sequence, source) {
-    var filename = this.video_dir + "/" + source + ".mp4",
-      title = frames[sequence].title,
+    var filename = this.video_dir + "/" + source.id + ".mp4",
       video = document.createElement("video");
 
     video.src = filename;
@@ -141,10 +110,11 @@ var application = {
     video.loop = true;
     video.preload = "auto";
 
-    this.buildVideoWindow(source, title, video);
+    this.buildVideoWindow(source.id, sequence.title, video);
   },
 
   buildVideoWindow: function (id, title, video) {
+    console.log(id + " " + title + " " + video);
     var titlebar = `
             <div class="window-titlebar">
                 <button type="button" class="btn-close" title="Close"><i class="fa fa-2x fa-minus"></i></button>
@@ -179,7 +149,6 @@ var application = {
   finishSequence: function (sequence) {
     var showIdentity = function () {
       this.resetLoader();
-      frames[sequence].renderer(this);
     };
 
     setTimeout(showIdentity.bind(this), 1000);
