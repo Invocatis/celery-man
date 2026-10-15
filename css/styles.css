@@ -8,7 +8,7 @@ html {
 /******************************************************* desktop */
 
 #desktop {
-    background-color: #40AAAC;
+    background-color: #00a9d5;
     font-family: sans-serif;
     font-size: 11px;
     font-style: normal;
@@ -16,6 +16,20 @@ html {
     height: 100%;
     position: fixed;
     width: 100%;
+}
+
+#desktop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.3) 3px,
+        rgba(0, 0, 0, 0.3) 4px
+    );
 }
 
 /******************************************************* desktop icons */
@@ -74,8 +88,8 @@ html {
 }
 
 .window h3 {
-    display:block;
-    font-weight:bold;
+    display: block;
+    font-weight: bold;
     font-size: 16px;
     height: 20px;
 }
@@ -110,7 +124,7 @@ html {
 }
 
 #window-prompt .window-content {
-    font-family: 'VT323', monospace;
+    font-family: "VT323", monospace;
 }
 
 /******************************************************* welcome */
@@ -124,7 +138,7 @@ html {
 #window-welcome .header {
     width: 100%;
 }
-#window-welcome .progress  {
+#window-welcome .progress {
     margin-top: 20px;
 }
 #window-welcome .progress span {
@@ -139,7 +153,7 @@ html {
 
 #window-welcome .options h2 {
     display: block;
-    font-weight:bold;
+    font-weight: bold;
     font-size: 16px;
     height: 30px;
     padding: 10px;
