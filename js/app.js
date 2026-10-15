@@ -7,7 +7,6 @@ var sequences = {
       { id: "celery3", position: { top: "40%", left: "25%" } },
       { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
-    prompt: "Yes, Paul.",
   },
 
   celery_engaged: {
@@ -18,7 +17,6 @@ var sequences = {
       // { id: "celery3", position: { top: "40%", left: "25%" } },
       // { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
-    prompt: "4d3d3d3 Engaged.",
   },
 
   oyster: {
@@ -28,7 +26,6 @@ var sequences = {
       { id: "oyster2", position: { top: "25%", left: "5%" } },
       { id: "oyster3", position: { top: "40%", left: "45%" } },
     ],
-    prompt: "add sequence: OYSTER",
   },
 
   tayne: {
@@ -40,7 +37,6 @@ var sequences = {
       { id: "tayne4", position: { top: "25%", left: "20%" } },
       { id: "tayne5", position: { top: "5%", left: "50%" } },
     ],
-    prompt: "I have a BETA sequence I have been working on",
   },
 
   mozza: {
@@ -49,12 +45,63 @@ var sequences = {
       { id: "mozza1", position: { top: "10%", left: "5%" } },
       { id: "mozza2", position: { top: "30%", left: "35%" } },
     ],
-    prompt: "",
+  },
+};
+
+var modes = {
+  base: {
+    frames: [
+      {
+        // audio: "audio/computer/01_GoodMorningPaul.mp3",
+        prompt: "Good morning, Paul.",
+      },
+    ],
+  },
+  celery: {
+    keybinding: "c",
+    frames: [
+      {
+        sequence: "celery",
+        loading: true,
+        prompt: "Yes, Paul.",
+        audio: "audio/computer/02_YesPaul.mp3",
+        clear: true,
+      },
+      {
+        sequence: "celery_engaged",
+        prompt: "4d3d3d3 Engaged.",
+        audio: "audio/computer/03_4d3d3d3.mp3",
+        // flash: true,
+        // clear: true,
+      },
+      {
+        sequence: "oyster",
+        prompt: "add sequence: OYSTER",
+        audio: "audio/computer/04_AddSequenceOyster.mp3",
+      },
+    ],
+  },
+  tayne: {
+    keybinding: "t",
+    frames: [
+      {
+        clear: true,
+        prompt:
+          "I have a BETA sequence I have been working on.\nWould you like to see it?",
+        audio: "audio/computer/05_BetaSequence.mp3",
+      },
+      {
+        loading: true,
+        sequence: "tayne",
+        prompt: "",
+      },
+    ],
   },
 };
 
 var state = {
-  loaded: null,
+  mode: null,
+  frame: null,
 };
 
 var application = {
@@ -68,31 +115,26 @@ var application = {
         textPromptContent;
       await new Promise((r) => setTimeout(r, 65));
     }
+
+    await new Promise((r) => setTimeout(r, 300));
   },
 
-  sequenceRenderer: function (sequence) {
+  sequenceRenderer: async function (sequence) {
     sequence.windows
       .map((source) => application.createVideoWindow(source))
       .forEach((win) => (win.style.display = "block"));
-
-    application.changeTextPrompt(sequence.prompt);
   },
 
-  showSequence: async function (sequence_name) {
-    state.loaded = sequence_name;
-
-    application.audioStop();
-    application.audioStart(sequence_name);
+  addSequence: async function (sequence_name) {
+    console.log("Add sequence: " + sequence_name);
 
     application.embedStop();
     application.hide("#window-original");
     application.hide("#window-welcome");
 
-    application.show("#window-loader");
-
-    await application.loadingWindow("#window-loader progress");
-
     const sequence = sequences[sequence_name];
+
+    console.log("---- " + sequence);
 
     sequence.windows.forEach((source) =>
       application.buildVideo(sequence, source),
@@ -111,6 +153,50 @@ var application = {
     video.preload = "auto";
 
     this.buildVideoWindow(source.id, sequence.title, video);
+  },
+
+  cycleFrame: function (mode) {
+    if (state.frame >= modes[mode].frames.length) return;
+    state.frame++;
+  },
+
+  selectMode: function (mode) {
+    if (state.mode == mode) {
+      application.cycleFrame(mode);
+    } else {
+      state.mode = mode;
+      state.frame = 0;
+    }
+  },
+
+  renderCurrentFrame: async function () {
+    if (state.frame >= modes[state.mode].frames.length) return;
+    let mode = modes[state.mode];
+    let frame = mode.frames[state.frame];
+
+    if (frame.audio) {
+      application.playAudio(frame.audio);
+    }
+
+    if (frame.prompt) {
+      await application.changeTextPrompt(frame.prompt);
+    }
+
+    if (frame.loading) {
+      await application.loadingWindow("#window-loader progress");
+    }
+
+    if (frame.flash) {
+      application.flashVideos();
+    }
+
+    if (frame.clear) {
+      application.clearVideos();
+    }
+
+    if (frame.sequence) {
+      application.addSequence(frame.sequence);
+    }
   },
 
   buildVideoWindow: function (id, title, video) {
@@ -136,6 +222,7 @@ var application = {
   },
 
   loadingWindow: async function (selector) {
+    application.show("#window-loader");
     for (
       var progress = 100;
       progress < 100;
@@ -144,6 +231,7 @@ var application = {
       await new Promise((r) => setTimeout(r, 100));
       document.querySelector(selector).value = progress;
     }
+    application.hide("#window-loader");
   },
 
   finishSequence: function (sequence) {
@@ -187,16 +275,16 @@ var application = {
     application.initialize();
   },
 
-  keybinding: function (key, sequence) {
+  keybinding: function (key, mode) {
     document.addEventListener("keydown", (event) => {
       if (event.key == key) {
-        application.stopCurrentSequence();
-        application.showSequence(sequence);
+        application.selectMode(mode);
+        application.renderCurrentFrame();
       }
     });
   },
 
-  initialize: function () {
+  initialize: async function () {
     application.keybinding("c", "celery");
     application.keybinding("o", "oyster");
     application.keybinding("t", "tayne");
@@ -206,7 +294,8 @@ var application = {
     this.show("#window-welcome .options");
     this.show("#window-prompt");
 
-    application.changeTextPrompt("Good morning, Paul.");
+    application.selectMode("base");
+    application.renderCurrentFrame();
 
     ["celery", "oyster", "tayne", "mozza"].forEach((source) =>
       this.addClicker(source),
@@ -217,7 +306,7 @@ var application = {
       .getElementById("option-" + source)
       .addEventListener("click", () => {
         application.stopCurrentSequence();
-        application.showSequence(source);
+        application.addSequence(source);
       });
   },
 
@@ -239,25 +328,52 @@ var application = {
 
   stopCurrentSequence: function () {
     application.audioStop();
+    application.clearVideos();
+  },
+
+  clearVideos: function () {
     document.querySelectorAll(".window-video").forEach((el) => el.remove());
   },
 
-  embedStart: function (e) {
-    var youtubeArgs = { event: "command", func: "playVideo", args: "" },
-      iframe = document
-        .querySelector("#window-original")
-        .getElementsByTagName("iframe")[0].contentWindow;
+  flashVideos: function () {
+    document.querySelectorAll(".window-video").forEach((el) => {
+      el.addEventListener("animationend", () => div.classList.remove("flash"), {
+        once: true,
+      });
+      el.classList + "flash";
+    });
+  },
 
-    iframe.postMessage(JSON.stringify(youtubeArgs), "*");
+  windowCascade: function (window) {
+    for (var i = 0; i < 10; i++) {
+      const clone = window.cloneNode(true);
+      const translate = i * 100 + "px";
+      clone.style.transform =
+        "translateX(" + translate + ") translateY(" + translate + ")";
+      clone.style.top = null;
+      clone.style.left = null;
+      window.parentElement.appendChild(clone);
+    }
+  },
+
+  embedStart: function (e) {
+    // var youtubeArgs = { event: "command", func: "playVideo", args: "" },
+    //   iframe = document
+    //     .querySelector("#window-original")
+    //     .getElementsByTagName("iframe")[0].contentWindow;
+    // iframe.postMessage(JSON.stringify(youtubeArgs), "*");
   },
 
   embedStop: function (e) {
-    var youtubeArgs = { event: "command", func: "pauseVideo", args: "" },
-      iframe = document
-        .querySelector("#window-original")
-        .getElementsByTagName("iframe")[0].contentWindow;
+    // var youtubeArgs = { event: "command", func: "pauseVideo", args: "" },
+    //   iframe = document
+    //     .querySelector("#window-original")
+    //     .getElementsByTagName("iframe")[0].contentWindow;
+    // iframe.postMessage(JSON.stringify(youtubeArgs), "*");
+  },
 
-    iframe.postMessage(JSON.stringify(youtubeArgs), "*");
+  playAudio: async function (file) {
+    await new Audio(file).play();
   },
 
   audioStop: function () {
