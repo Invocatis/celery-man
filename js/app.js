@@ -49,8 +49,6 @@ var application = {
 
       this.loaded.forEach((win) => (win.style.display = "block"));
 
-      console.log("ASDF");
-
       application.changeTextPrompt("add sequence: OYSTER");
     },
   },
@@ -114,7 +112,7 @@ var application = {
       textPromptContent += char;
       document.querySelector("#window-prompt .window-content").innerHTML =
         textPromptContent;
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 65));
     }
   },
 
@@ -158,6 +156,7 @@ var application = {
 
     this.buildVideoWindow(source, title, video);
   },
+
   buildVideoWindow: function (id, title, video) {
     var titlebar = `
             <div class="window-titlebar">
@@ -178,6 +177,7 @@ var application = {
 
     document.getElementById("desktop").insertAdjacentElement("beforeend", win);
   },
+
   launchVideoWindow: function (sequence) {
     this[sequence].progress++;
 
@@ -243,7 +243,8 @@ var application = {
         }
       };
 
-    setInterval(() => loading(this), 100);
+    // setInterval(() => loading(this), 100);
+    setInterval(() => loading(this), 0);
   },
 
   keybinding: function (key, sequence) {

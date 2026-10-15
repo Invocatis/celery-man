@@ -5,6 +5,10 @@ html {
     padding: 0;
 }
 
+.hidden {
+    display: none;
+}
+
 /******************************************************* desktop */
 
 #desktop {
@@ -72,6 +76,7 @@ html {
     padding: 0;
     position: absolute;
     text-align: center;
+    animation: expand-window 1s ease forwards;
 }
 
 .window-content {
@@ -82,7 +87,10 @@ html {
 
 .window-video {
     min-width: 200px;
+    transform-origin: center;
+    animation: window-expand 0.2s steps(8, start) forwards;
 }
+
 .window-video video {
     width: 100%;
 }
@@ -92,6 +100,15 @@ html {
     font-weight: bold;
     font-size: 16px;
     height: 20px;
+}
+
+@keyframes window-expand {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
 }
 
 /******************************************************* loader */
@@ -125,6 +142,18 @@ html {
 
 #window-prompt .window-content {
     font-family: "VT323", monospace;
+}
+
+#window-prompt .window-content::after {
+    content: "_";
+    background: white;
+    animation: prompt-cursor 0.5s steps(2, start) infinite;
+}
+
+@keyframes prompt-cursor {
+    to {
+        visibility: hidden;
+    }
 }
 
 /******************************************************* welcome */
