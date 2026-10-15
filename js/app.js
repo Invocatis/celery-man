@@ -10,18 +10,13 @@ var application = {
       { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
     progress: 0,
-    loaded: [],
     renderer: function (app) {
       app.audioStop();
       app.audioStart("celery");
 
-      if (this.loaded.length === 0) {
-        this.loaded = this.windows.map((source) =>
-          app.createVideoWindow(source),
-        );
-      }
-
-      this.loaded.forEach((win) => (win.style.display = "block"));
+      this.windows
+        .map((source) => app.createVideoWindow(source))
+        .forEach((win) => (win.style.display = "block"));
 
       application.changeTextPrompt("4d3d3d3 Engaged.");
     },
@@ -35,19 +30,14 @@ var application = {
       { id: "oyster3", position: { top: "40%", left: "45%" } },
     ],
     progress: 0,
-    loaded: [],
     renderer: function (app) {
       app.audioStop();
       app.audioStart("celery");
       app.audioStart("oyster");
 
-      if (this.loaded.length === 0) {
-        this.loaded = this.windows.map((source) =>
-          app.createVideoWindow(source),
-        );
-      }
-
-      this.loaded.forEach((win) => (win.style.display = "block"));
+      this.windows
+        .map((source) => app.createVideoWindow(source))
+        .forEach((win) => (win.style.display = "block"));
 
       application.changeTextPrompt("add sequence: OYSTER");
     },
@@ -63,18 +53,13 @@ var application = {
       { id: "tayne5", position: { top: "5%", left: "50%" } },
     ],
     progress: 0,
-    loaded: [],
     renderer: function (app) {
       app.audioStop();
       app.audioStart("tayne");
 
-      if (this.loaded.length === 0) {
-        this.loaded = this.windows.map((source) =>
-          app.createVideoWindow(source),
-        );
-      }
-
-      this.loaded.forEach((win) => (win.style.display = "block"));
+      this.windows
+        .map((source) => app.createVideoWindow(source))
+        .forEach((win) => (win.style.display = "block"));
 
       application.changeTextPrompt(
         "I have a BETA sequence I have been working on",
@@ -89,18 +74,13 @@ var application = {
       { id: "mozza2", position: { top: "30%", left: "35%" } },
     ],
     progress: 0,
-    loaded: [],
     renderer: function (app) {
       app.audioStop();
       app.audioStart("celery");
 
-      if (this.loaded.length === 0) {
-        this.loaded = this.windows.map((source) =>
-          app.createVideoWindow(source),
-        );
-      }
-
-      this.loaded.forEach((win) => (win.style.display = "block"));
+      this.windows
+        .map((source) => app.createVideoWindow(source))
+        .forEach((win) => (win.style.display = "block"));
 
       application.changeTextPrompt("Good morning, Paul.");
     },
