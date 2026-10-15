@@ -1,5 +1,23 @@
-var application = {
-  video_dir: "video",
+var frames = {
+  celery: {
+    title: "Celery Man",
+    windows: [
+      { id: "celery1", position: { top: "15%", left: "5%" } },
+      { id: "celery2", position: { top: "20%", left: "45%" } },
+      { id: "celery3", position: { top: "40%", left: "25%" } },
+      { id: "celery4", position: { top: "10%", left: "65%" } },
+    ],
+    renderer: function (app) {
+      app.audioStop();
+      app.audioStart("celery");
+
+      this.windows
+        .map((source) => app.createVideoWindow(source))
+        .forEach((win) => (win.style.display = "block"));
+
+      application.changeTextPrompt("4d3d3d3 Engaged.");
+    },
+  },
 
   celery: {
     title: "Celery Man",
@@ -9,7 +27,6 @@ var application = {
       { id: "celery3", position: { top: "40%", left: "25%" } },
       { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
-    progress: 0,
     renderer: function (app) {
       app.audioStop();
       app.audioStart("celery");
@@ -29,7 +46,6 @@ var application = {
       { id: "oyster2", position: { top: "25%", left: "5%" } },
       { id: "oyster3", position: { top: "40%", left: "45%" } },
     ],
-    progress: 0,
     renderer: function (app) {
       app.audioStop();
       app.audioStart("celery");
@@ -52,7 +68,6 @@ var application = {
       { id: "tayne4", position: { top: "25%", left: "20%" } },
       { id: "tayne5", position: { top: "5%", left: "50%" } },
     ],
-    progress: 0,
     renderer: function (app) {
       app.audioStop();
       app.audioStart("tayne");
@@ -73,7 +88,6 @@ var application = {
       { id: "mozza1", position: { top: "10%", left: "5%" } },
       { id: "mozza2", position: { top: "30%", left: "35%" } },
     ],
-    progress: 0,
     renderer: function (app) {
       app.audioStop();
       app.audioStart("celery");
@@ -85,6 +99,10 @@ var application = {
       application.changeTextPrompt("Good morning, Paul.");
     },
   },
+};
+
+var application = {
+  video_dir: "video",
 
   changeTextPrompt: async function (text) {
     var textPromptContent = "";
@@ -96,43 +114,32 @@ var application = {
     }
   },
 
-  showSequence: function (sequence) {
-    var windows = this[sequence].windows,
-      renderer = this[sequence].renderer.bind(this[sequence]);
+  showSequence: async function (sequence) {
+    var windows = frames[sequence].windows,
+      renderer = frames[sequence].renderer.bind(frames[sequence]);
 
-    var sequencer = function () {
-      this.embedStop();
-      this.hide("#window-original");
-      this.hide("#window-welcome");
+    application.embedStop();
+    application.hide("#window-original");
+    application.hide("#window-welcome");
 
-      if (this[sequence].isLoaded) {
-        return renderer(this);
-      }
+    application.show("#window-loader");
 
-      this.show("#window-loader");
+    await application.loadingWindow("#window-loader progress");
 
-      windows.forEach((source) => this.buildVideo(sequence, source.id));
-    };
+    application.finishSequence(sequence);
 
-    return sequencer.bind(this);
+    windows.forEach((source) => application.buildVideo(sequence, source.id));
   },
 
   buildVideo: function (sequence, source) {
     var filename = this.video_dir + "/" + source + ".mp4",
-      title = this[sequence].title,
+      title = frames[sequence].title,
       video = document.createElement("video");
 
     video.src = filename;
     video.autoplay = true;
     video.loop = true;
     video.preload = "auto";
-
-    var launcher = function (e) {
-      this.launchVideoWindow(sequence);
-      video.removeEventListener("canplaythrough", launcher);
-    }.bind(this);
-
-    video.addEventListener("canplaythrough", launcher);
 
     this.buildVideoWindow(source, title, video);
   },
@@ -158,31 +165,28 @@ var application = {
     document.getElementById("desktop").insertAdjacentElement("beforeend", win);
   },
 
-  launchVideoWindow: function (sequence) {
-    this[sequence].progress++;
-
-    var total = this[sequence].windows.length,
-      loaded = this[sequence].progress,
-      percentage = loaded < total ? (100 * loaded) / total : 100;
-
-    document.querySelector("#window-loader progress").value = percentage;
-
-    if (loaded >= total) {
-      this.finishSequence(sequence);
+  loadingWindow: async function (selector) {
+    for (
+      var progress = 100;
+      progress < 100;
+      progress += Math.trunc(10 * Math.random())
+    ) {
+      await new Promise((r) => setTimeout(r, 100));
+      document.querySelector(selector).value = progress;
     }
   },
 
   finishSequence: function (sequence) {
     var showIdentity = function () {
       this.resetLoader();
-      this[sequence].renderer(this);
+      frames[sequence].renderer(this);
     };
 
     setTimeout(showIdentity.bind(this), 1000);
   },
   resetLoader: function () {
     this.hide("#window-loader");
-    document.querySelector("#window-loader progress").value = 10;
+    document.querySelector("#window-loader progress").value = 0;
   },
 
   boot: function () {
@@ -208,30 +212,17 @@ var application = {
     this.loadWelcome();
   },
 
-  loadWelcome: function () {
-    var a = 10,
-      progress = document
-        .getElementById("window-welcome")
-        .querySelector("progress"),
-      loading = function (app) {
-        a += 10;
-        progress.value = a;
+  loadWelcome: async function () {
+    await application.loadingWindow("#window-welcome progress");
 
-        if (a === 100) {
-          clearInterval(loading);
-          app.initialize();
-        }
-      };
-
-    // setInterval(() => loading(this), 100);
-    setInterval(() => loading(this), 0);
+    application.initialize();
   },
 
   keybinding: function (key, sequence) {
     document.addEventListener("keydown", (event) => {
       if (event.key == key) {
-        application.hide(".window");
-        application.showSequence(sequence)();
+        application.stopCurrentSequence();
+        application.showSequence(sequence);
       }
     });
   },
@@ -248,8 +239,6 @@ var application = {
 
     application.changeTextPrompt("Good morning, Paul.");
 
-    var showSequence = this.showSequence.bind(this);
-
     ["celery", "oyster", "tayne", "mozza"].forEach((source) =>
       this.addClicker(source),
     );
@@ -257,11 +246,13 @@ var application = {
   addClicker: function (source) {
     document
       .getElementById("option-" + source)
-      .addEventListener("click", this.showSequence(source));
+      .addEventListener("click", () => {
+        application.stopCurrentSequence();
+        application.showSequence(source);
+      });
   },
 
   clickCinco: function () {
-    this.hide(".window");
     this.show("#window-welcome");
     this.show("#window-prompt");
 
@@ -270,10 +261,16 @@ var application = {
     this.embedStop();
     this.audioStop();
   },
+
   clickOriginal: function () {
     this.clickCinco();
     this.show("#window-original");
     this.embedStart();
+  },
+
+  stopCurrentSequence: function () {
+    application.audioStop();
+    document.querySelectorAll(".window-video").forEach((el) => el.remove());
   },
 
   embedStart: function (e) {
@@ -284,6 +281,7 @@ var application = {
 
     iframe.postMessage(JSON.stringify(youtubeArgs), "*");
   },
+
   embedStop: function (e) {
     var youtubeArgs = { event: "command", func: "pauseVideo", args: "" },
       iframe = document
@@ -292,11 +290,13 @@ var application = {
 
     iframe.postMessage(JSON.stringify(youtubeArgs), "*");
   },
+
   audioStop: function () {
     document
       .querySelectorAll("#cinco-audio audio")
       .forEach((elem) => elem.pause());
   },
+
   audioStart: function (sequence) {
     document.getElementById("audio-" + sequence).play();
   },
@@ -309,34 +309,25 @@ var application = {
 
     return win;
   },
+
   createWindow: function (id) {
     var elem = document.getElementById(id),
-      closeHandler = this.closeDialog.bind(this),
       options = {
         handle: ".window-titlebar",
       };
 
     new Draggabilly(elem, options);
 
-    elem.querySelector(".btn-close").addEventListener("click", closeHandler);
-
     return elem;
-  },
-  closeDialog: function (event) {
-    var elem = event.target,
-      win = elem.parentElement.parentElement.parentElement;
-
-    win.style.display = "none";
-    if (win.matches("#window-original")) {
-      this.embedStop();
-    }
   },
 
   hide: function (selector) {
+    console.log("hiding ... " + selector);
     document
       .querySelectorAll(selector)
       .forEach((elem) => (elem.style.display = "none"));
   },
+
   show: function (selector) {
     document
       .querySelectorAll(selector)
