@@ -36,6 +36,7 @@ var sequences = {
       { id: "tayne3", position: { top: "10%", left: "5%" } },
       { id: "tayne4", position: { top: "25%", left: "20%" } },
       { id: "tayne5", position: { top: "5%", left: "50%" } },
+      { id: "tayne18", position: { top: "50%", left: "50%" } },
     ],
   },
 
@@ -52,8 +53,9 @@ var modes = {
   base: {
     frames: [
       {
-        // audio: "audio/computer/01_GoodMorningPaul.mp3",
+        audio: "audio/computer/01_GoodMorningPaul.mp3",
         prompt: "Good morning, Paul.",
+        element: "#window-welcome",
       },
     ],
   },
@@ -108,12 +110,13 @@ var application = {
   video_dir: "video",
 
   changeTextPrompt: async function (text) {
+    application.show("#window-prompt");
     var textPromptContent = "";
     for (const char of text) {
       textPromptContent += char;
       document.querySelector("#window-prompt .window-content").innerHTML =
         textPromptContent;
-      await new Promise((r) => setTimeout(r, 65));
+      await new Promise((r) => setTimeout(r, 50));
     }
 
     await new Promise((r) => setTimeout(r, 300));
@@ -174,6 +177,10 @@ var application = {
     let mode = modes[state.mode];
     let frame = mode.frames[state.frame];
 
+    if (frame.element) {
+      application.show(frame.element);
+    }
+
     if (frame.audio) {
       application.playAudio(frame.audio);
     }
@@ -183,7 +190,8 @@ var application = {
     }
 
     if (frame.loading) {
-      await application.loadingWindow("#window-loader progress");
+      console.log("loading ...");
+      await application.loadingWindow("#window-loader");
     }
 
     if (frame.flash) {
@@ -221,17 +229,19 @@ var application = {
     document.getElementById("desktop").insertAdjacentElement("beforeend", win);
   },
 
-  loadingWindow: async function (selector) {
-    application.show("#window-loader");
+  loadingWindow: async function (selector, hide = true) {
+    application.show(selector);
     for (
-      var progress = 100;
+      var progress = 0;
       progress < 100;
       progress += Math.trunc(10 * Math.random())
     ) {
       await new Promise((r) => setTimeout(r, 100));
-      document.querySelector(selector).value = progress;
+      document.querySelector(selector + " progress").value = progress;
     }
-    application.hide("#window-loader");
+    if (hide) {
+      application.hide(selector);
+    }
   },
 
   finishSequence: function (sequence) {
@@ -247,6 +257,10 @@ var application = {
   },
 
   boot: function () {
+    console.log("Booting...");
+
+    application.clearVideos();
+
     var windows = [
       "window-welcome",
       "window-loader",
@@ -254,25 +268,18 @@ var application = {
       "window-original",
     ];
 
-    document
-      .querySelector(".icon-cinco")
-      .addEventListener("click", (event) => this.clickCinco(event));
-    document
-      .querySelector(".icon-original")
-      .addEventListener("click", (event) => this.clickOriginal(event));
-
     windows.forEach((win) => this.createWindow(win));
 
-    this.hide("#window-welcome .options");
     this.show("#window-welcome");
 
     this.loadWelcome();
+
+    application.selectMode("base");
+    application.renderCurrentFrame();
   },
 
   loadWelcome: async function () {
-    await application.loadingWindow("#window-welcome progress");
-
-    application.initialize();
+    await application.loadingWindow("#window-welcome", (hide = false));
   },
 
   keybinding: function (key, mode) {
@@ -290,40 +297,11 @@ var application = {
     application.keybinding("t", "tayne");
     application.keybinding("s", "mozza");
 
-    this.hide("#window-welcome .progress");
-    this.show("#window-welcome .options");
-    this.show("#window-prompt");
-
-    application.selectMode("base");
-    application.renderCurrentFrame();
-
-    ["celery", "oyster", "tayne", "mozza"].forEach((source) =>
-      this.addClicker(source),
-    );
-  },
-  addClicker: function (source) {
-    document
-      .getElementById("option-" + source)
-      .addEventListener("click", () => {
-        application.stopCurrentSequence();
-        application.addSequence(source);
-      });
-  },
-
-  clickCinco: function () {
-    this.show("#window-welcome");
-    this.show("#window-prompt");
-
-    application.changeTextPrompt("Good morning, Paul.");
-
-    this.embedStop();
-    this.audioStop();
-  },
-
-  clickOriginal: function () {
-    this.clickCinco();
-    this.show("#window-original");
-    this.embedStart();
+    document.addEventListener("keydown", (event) => {
+      if (event.key == " ") {
+        application.boot();
+      }
+    });
   },
 
   stopCurrentSequence: function () {
