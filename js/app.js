@@ -4,8 +4,8 @@ var sequences = {
     windows: [
       // { id: "celery1", position: { top: "15%", left: "5%" } },
       // { id: "celery2", position: { top: "20%", left: "45%" } },
-      { id: "celery3", position: { top: "40%", left: "25%" } },
-      { id: "celery4", position: { top: "10%", left: "65%" } },
+      { id: "celery3", position: { top: "10%", left: "45%" } },
+      { id: "celery4", position: { top: "10%", left: "10%" } },
     ],
   },
 
@@ -13,7 +13,7 @@ var sequences = {
     title: "Celery Man",
     windows: [
       { id: "celery1", position: { top: "15%", left: "5%" } },
-      { id: "celery2", position: { top: "20%", left: "45%" } },
+      { id: "celery2", position: { top: "10%", left: "45%" } },
       // { id: "celery3", position: { top: "40%", left: "25%" } },
       // { id: "celery4", position: { top: "10%", left: "65%" } },
     ],
@@ -122,12 +122,6 @@ var application = {
     await new Promise((r) => setTimeout(r, 300));
   },
 
-  sequenceRenderer: async function (sequence) {
-    sequence.windows
-      .map((source) => application.createVideoWindow(source))
-      .forEach((win) => (win.style.display = "block"));
-  },
-
   addSequence: async function (sequence_name) {
     console.log("Add sequence: " + sequence_name);
 
@@ -137,16 +131,27 @@ var application = {
 
     const sequence = sequences[sequence_name];
 
-    console.log("---- " + sequence);
-
-    sequence.windows.forEach((source) =>
-      application.buildVideo(sequence, source),
-    );
-    application.sequenceRenderer(sequence);
+    var timeout = 200;
+    sequence.windows.forEach((source) => {
+      const win = application.buildVideo(sequence, source);
+      setTimeout(() => application.placeVideoWindow(win, source), timeout);
+      timeout += 500 * Math.random() + 200;
+    });
     application.finishSequence(sequence);
   },
 
   buildVideo: function (sequence, source) {
+    var titlebar = `
+            <div class="window-titlebar">
+                <button type="button" class="btn-close" title="Close"><i class="fa fa-2x fa-minus"></i></button>
+
+                <span class="title">${sequence.title}</span>
+
+                <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-up"></i></button>
+                <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-down"></i></button>
+            </div>
+        `;
+
     var filename = this.video_dir + "/" + source.id + ".mp4",
       video = document.createElement("video");
 
@@ -155,7 +160,15 @@ var application = {
     video.loop = true;
     video.preload = "auto";
 
-    this.buildVideoWindow(source.id, sequence.title, video);
+    var win = document.createElement("div");
+    win.id = source.id;
+    win.className = "window window-video";
+    win.innerHTML = titlebar;
+    win.insertAdjacentElement("beforeend", video);
+
+    console.log(win);
+
+    return win;
   },
 
   cycleFrame: function (mode) {
@@ -207,28 +220,6 @@ var application = {
     }
   },
 
-  buildVideoWindow: function (id, title, video) {
-    console.log(id + " " + title + " " + video);
-    var titlebar = `
-            <div class="window-titlebar">
-                <button type="button" class="btn-close" title="Close"><i class="fa fa-2x fa-minus"></i></button>
-
-                <span class="title">${title}</span>
-
-                <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-up"></i></button>
-                <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-down"></i></button>
-            </div>
-        `;
-
-    var win = document.createElement("div");
-    win.id = id;
-    win.className = "window window-video";
-    win.innerHTML = titlebar;
-    win.insertAdjacentElement("beforeend", video);
-
-    document.getElementById("desktop").insertAdjacentElement("beforeend", win);
-  },
-
   loadingWindow: async function (selector, hide = true) {
     application.show(selector);
     for (
@@ -267,8 +258,6 @@ var application = {
       "window-prompt",
       "window-original",
     ];
-
-    windows.forEach((win) => this.createWindow(win));
 
     this.show("#window-welcome");
 
@@ -360,29 +349,34 @@ var application = {
       .forEach((elem) => elem.pause());
   },
 
-  audioStart: function (sequence) {
-    document.getElementById("audio-" + sequence).play();
-  },
+  placeVideoWindow: (() => {
+    var x = 0;
+    var y = 0;
 
-  createVideoWindow: function (source) {
-    var win = this.createWindow(source.id);
-    for (var coord in source.position) {
-      win.style[coord] = source.position[coord];
-    }
+    return function (win, source) {
+      x += Math.random() * 50;
+      x %= 80;
 
-    return win;
-  },
+      y += Math.random() * 50;
+      y %= 80;
 
-  createWindow: function (id) {
-    var elem = document.getElementById(id),
-      options = {
-        handle: ".window-titlebar",
-      };
+      const cx = source.position.left || x + "%";
+      const cy = source.position.top || y + "%";
 
-    new Draggabilly(elem, options);
+      requestAnimationFrame(() => {
+        document
+          .getElementById("desktop")
+          .insertAdjacentElement("beforeend", win);
 
-    return elem;
-  },
+        requestAnimationFrame(() => {
+          win.style.left = `clamp(0px, ${cx}, calc(100% - ${win.offsetWidth}px))`;
+          win.style.top = `clamp(0px, ${cy}, calc(100% - ${win.offsetHeight}px))`;
+        });
+      });
+
+      return win;
+    };
+  })(),
 
   hide: function (selector) {
     console.log("hiding ... " + selector);
