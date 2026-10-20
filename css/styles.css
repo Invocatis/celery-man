@@ -94,6 +94,10 @@ html {
     width: 100%;
 }
 
+.window-video img {
+    width: 100%;
+}
+
 .window h3 {
     display: block;
     font-weight: bold;
@@ -124,18 +128,14 @@ html {
 
 #window-loader {
     left: calc(50% - 200px);
-    top: 50%;
+    top: calc(50% - 80px);
 
+    width: 400px;
+    height: 160px;
     z-index: 1000;
 }
 #window-loader h3 {
     width: 400px;
-}
-
-#window-original {
-    top: 10%;
-    left: 10%;
-    width: 600px;
 }
 
 /******************************************************* prompt */
