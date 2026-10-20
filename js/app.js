@@ -1,22 +1,20 @@
+// import { loadUserSequences } from "./load_user_sequences.js";
+
 var sequences = {
   celery: {
     title: "Celery Man",
     music: "audio/celery_1.mp3",
     windows: [
       // { id: "celery1", media: "video/celery1.mp4", position: { top: "15%", left: "5%" } },
-      // mediaType: "video",
       // { id: "celery2", media: "video/celery2.mp4", position: { top: "20%", left: "45%" } },
-      // mediaType: "video",
       {
         id: "celery3",
         media: "video/celery3.mp4",
-        mediaType: "video",
         position: { top: "10%", left: "45%" },
       },
       {
         id: "celery4",
         media: "video/celery4.mp4",
-        mediaType: "video",
         position: { top: "10%", left: "10%" },
       },
     ],
@@ -29,19 +27,15 @@ var sequences = {
       {
         id: "celery1",
         media: "video/celery1.mp4",
-        mediaType: "video",
         position: { top: "10%", left: "10%" },
       },
       {
         id: "celery2",
         media: "video/celery2.mp4",
-        mediaType: "video",
         position: { top: "10%", left: "45%" },
       },
       // { id: "celery3", media: "video/celery3.mp4", position: { top: "40%", left: "25%" } },
-      // mediaType: "video",
       // { id: "celery4", media: "video/celery4.mp4", position: { top: "10%", left: "65%" } },
-      // mediaType: "video",
     ],
   },
 
@@ -52,19 +46,10 @@ var sequences = {
       {
         id: "oyster1",
         media: "video/oyster1.mp4",
-        mediaType: "video",
-        position: { top: "10%", left: "25%" },
       },
       {
         id: "oyster2",
         media: "video/oyster2.mp4",
-        mediaType: "video",
-        position: { top: "25%", left: "5%" },
-      },
-      {
-        id: "oyster3",
-        media: "video/oyster3.mp4",
-        mediaType: "video",
         position: { top: "40%", left: "45%" },
       },
     ],
@@ -77,37 +62,31 @@ var sequences = {
       {
         id: "tayne1",
         media: "video/tayne1.mp4",
-        mediaType: "video",
         position: { top: "20%", left: "35%" },
       },
       {
         id: "tayne2",
         media: "video/tayne2.mp4",
-        mediaType: "video",
         position: { top: "35%", left: "65%" },
       },
       {
         id: "tayne3",
         media: "video/tayne3.mp4",
-        mediaType: "video",
         position: { top: "10%", left: "5%" },
       },
       {
         id: "tayne4",
         media: "video/tayne4.mp4",
-        mediaType: "video",
         position: { top: "25%", left: "20%" },
       },
       {
         id: "tayne5",
         media: "video/tayne5.mp4",
-        mediaType: "video",
         position: { top: "5%", left: "50%" },
       },
       {
         id: "tayne18",
         media: "video/tayne18.png",
-        mediaType: "image",
         position: { top: "50%", left: "50%" },
       },
     ],
@@ -119,20 +98,28 @@ var sequences = {
       {
         id: "mozza1",
         media: "video/mozza1.mp4",
-        mediaType: "video",
         position: { top: "10%", left: "5%" },
       },
       {
         id: "mozza2",
         media: "video/mozza2.mp4",
-        mediaType: "video",
         position: { top: "30%", left: "35%" },
       },
     ],
   },
 };
 
-var modes = {
+var sequences = {
+  sequence_not_found: {
+    frames: [
+      {
+        prompt: "Sequence not found",
+      },
+    ],
+  },
+  clear: {
+    frames: [{ clear: true, music: null, prompt: "" }],
+  },
   base: {
     frames: [
       {
@@ -163,13 +150,11 @@ var modes = {
           {
             id: "celery3",
             media: "video/celery3.mp4",
-            mediaType: "video",
             position: { top: "10%", left: "45%" },
           },
           {
             id: "celery4",
             media: "video/celery4.mp4",
-            mediaType: "video",
             position: { top: "10%", left: "10%" },
           },
         ],
@@ -183,13 +168,11 @@ var modes = {
           {
             id: "celery1",
             media: "video/celery1.mp4",
-            mediaType: "video",
             position: { top: "10%", left: "10%" },
           },
           {
             id: "celery2",
             media: "video/celery2.mp4",
-            mediaType: "video",
             position: { top: "10%", left: "45%" },
           },
         ],
@@ -203,19 +186,43 @@ var modes = {
           {
             id: "oyster1",
             media: "video/oyster1.mp4",
-            mediaType: "video",
             position: { top: "10%", left: "25%" },
           },
           {
             id: "oyster2",
             media: "video/oyster2.mp4",
-            mediaType: "video",
             position: { top: "25%", left: "5%" },
           },
           {
             id: "oyster3",
             media: "video/oyster3.mp4",
-            mediaType: "video",
+            position: { top: "40%", left: "45%" },
+          },
+        ],
+      },
+    ],
+  },
+  oyster: {
+    frames: [
+      {
+        title: "Oyster",
+        prompt: "add sequence: OYSTER",
+        audio: "audio/voice/add_sequence_oyster.mp3",
+        music: "audio/music/oyster.mp3",
+        windows: [
+          {
+            id: "oyster1",
+            media: "video/oyster1.mp4",
+            position: { top: "10%", left: "25%" },
+          },
+          {
+            id: "oyster2",
+            media: "video/oyster2.mp4",
+            position: { top: "25%", left: "5%" },
+          },
+          {
+            id: "oyster3",
+            media: "video/oyster3.mp4",
             position: { top: "40%", left: "45%" },
           },
         ],
@@ -244,20 +251,34 @@ var modes = {
           {
             id: "tayne1",
             media: "video/tayne1.mp4",
-            mediaType: "video",
             position: { top: "20%", left: "55%" },
           },
           {
             id: "tayne2",
             media: "video/tayne2.mp4",
-            mediaType: "video",
             position: { top: "20%", left: "5%" },
           },
           {
             id: "tayne18",
             media: "video/tayne18.png",
-            mediaType: "image",
             position: { top: "30%", left: "30%" },
+          },
+        ],
+      },
+      {
+        clear: true,
+        windows: [
+          {
+            media: "video/tayne3.mp4",
+            position: { top: "30%", left: "15%" },
+          },
+          {
+            media: "video/tayne3.mp4",
+            position: { top: "30%", left: "40%" },
+          },
+          {
+            media: "video/tayne3.mp4",
+            position: { top: "30%", left: "65%" },
           },
         ],
       },
@@ -266,7 +287,7 @@ var modes = {
 };
 
 var state = {
-  mode: null,
+  sequence: null,
   frame: null,
   music: { path: null, player: null },
 };
@@ -281,6 +302,11 @@ var application = {
   },
 
   changeTextPrompt: async function (text) {
+    if (text == "") {
+      document.querySelector("#window-prompt .window-content").innerHTML = "";
+      return;
+    }
+
     application.show("#window-prompt");
     var textPromptContent = "";
     for (const char of text) {
@@ -318,6 +344,28 @@ var application = {
     },
   },
 
+  speak: function (text) {
+    const synth = window.speechSynthesis;
+    const voices = synth.getVoices();
+
+    // Prefer a male-sounding English voice if one exists, otherwise use any English voice
+    const voice =
+      voices.find((v) => console.log(v)) ||
+      voices.find((v) => v.lang.startsWith("en")) ||
+      voices[0];
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = voice;
+    u.pitch = 0; // lowest allowed (range 0–2)
+    u.rate = 0.9; // clip is fast, about 5 syllables/sec
+    u.volume = 1;
+
+    console.log(voice);
+
+    synth.cancel();
+    synth.speak(u);
+  },
+
   addWindows: async function (title, windows) {
     console.log("Add sequence: " + title);
 
@@ -346,17 +394,18 @@ var application = {
 
     var subelement = null;
 
-    if (source.mediaType == "image") {
+    if (source.media.endsWith(".jpg") || source.media.endsWith(".png")) {
       var image = document.createElement("img");
       image.src = source.media;
 
       subelement = image;
-    } else if (source.mediaType == "video") {
+    } else if (source.media.endsWith(".mp4")) {
       var video = document.createElement("video");
 
       video.src = source.media;
       video.autoplay = true;
       video.loop = true;
+      video.muted = true;
       video.preload = "auto";
 
       subelement = video;
@@ -371,29 +420,28 @@ var application = {
     return win;
   },
 
-  cycleFrame: function (mode) {
-    if (state.frame >= modes[mode].frames.length) return;
+  cycleFrame: function (sequence) {
+    if (state.frame >= sequences[sequence].frames.length) return;
     state.frame++;
   },
 
-  selectMode: function (mode) {
-    if (state.mode == mode) {
-      application.cycleFrame(mode);
+  selectSequence: function (sequence) {
+    if (state.sequence == sequence) {
+      application.cycleFrame(sequence);
     } else {
-      state.mode = mode;
+      state.sequence = sequence;
       state.frame = 0;
     }
   },
 
   renderCurrentFrame: async function () {
-    if (state.frame >= modes[state.mode].frames.length) return;
-    let mode = modes[state.mode];
-    let frame = mode.frames[state.frame];
+    if (state.frame >= sequences[state.sequence].frames.length) return;
+    let sequence = sequences[state.sequence];
+    let frame = sequence.frames[state.frame];
 
     if (frame.clear) {
       application.clearVideos();
       application.hide("#window-welcome");
-      application.music.stop();
     }
 
     if (frame.element) {
@@ -406,6 +454,8 @@ var application = {
 
     if (frame.audio) {
       await new Audio(frame.audio).play();
+    } else if (frame.prompt) {
+      application.speak(frame.prompt);
     }
 
     if (frame.prompt) {
@@ -613,6 +663,76 @@ var application = {
     document.querySelector("#window-loader progress").value = 0;
   },
 
+  sequenceLoadingStatements: [
+    "add sequence: {sequence}",
+    "initalizing: {sequence}",
+    "booting into: {sequence}",
+    "let's give {sequence} a try",
+    "perhaps {sequence} will suit your fancy",
+  ],
+
+  selectRandom: function (collection) {
+    return collection[Math.floor(Math.random() * collection.length)];
+  },
+
+  loadExternalSequences: async function () {
+    console.log("Loading external sequnces");
+    let folders = await fetch("http://localhost:8080/sequences/").then((r) =>
+      r.json(),
+    );
+
+    console.log("asdf");
+
+    console.log(folders);
+
+    for (let folder of folders) {
+      console.log("Loading sequence " + folder.name);
+      let files = await fetch(
+        "http://localhost:8080/sequences/" + folder.name,
+      ).then((r) => r.json());
+
+      console.log(files);
+
+      let music = files.filter((x) => x.name.endsWith(".mp3"));
+
+      let visualMedia = files.filter(
+        (x) =>
+          x.name.endsWith(".mp4") ||
+          x.name.endsWith(".png") ||
+          x.name.endsWith("jpg"),
+      );
+
+      let windows = [];
+      for (let file of visualMedia) {
+        windows.push({
+          media:
+            "http://localhost:8080/sequences/" + folder.name + "/" + file.name,
+        });
+      }
+
+      let sequence = {
+        frames: [
+          {
+            title: folder.name,
+            music:
+              music.length > 0
+                ? "http://localhost:8080/sequences/" +
+                  folder.name +
+                  "/" +
+                  music[0].name
+                : "",
+            windows: windows,
+            prompt: application
+              .selectRandom(application.sequenceLoadingStatements)
+              .replace("{sequence}", folder.name),
+          },
+        ],
+      };
+
+      sequences[folder.name] = sequence;
+    }
+  },
+
   boot: async function () {
     console.log("Booting...");
 
@@ -620,18 +740,11 @@ var application = {
 
     application.clearVideos();
 
-    var windows = [
-      "window-welcome",
-      "window-loader",
-      "window-prompt",
-      "window-original",
-    ];
-
     application.show("#window-welcome");
 
     await application.loadWelcome();
 
-    application.selectMode("base");
+    application.selectSequence("base");
     application.renderCurrentFrame();
   },
 
@@ -639,23 +752,51 @@ var application = {
     await application.loadingWindow("#window-welcome", (hide = false));
   },
 
-  keybinding: function (key, mode) {
+  keybinding: function (key, sequence) {
     document.addEventListener("keydown", (event) => {
-      if (event.key == key) {
-        application.selectMode(mode);
+      if (event.key == key && document.activeElement.id != "command-input") {
+        application.selectSequence(sequence);
         application.renderCurrentFrame();
       }
     });
   },
 
   initialize: async function () {
+    application.loadExternalSequences();
+
     application.keybinding("c", "celery");
     application.keybinding("o", "oyster");
     application.keybinding("t", "tayne");
     application.keybinding("s", "mozza");
 
     document.addEventListener("keydown", (event) => {
-      if (event.key == " ") {
+      if (event.key == "Enter") {
+        if (document.activeElement.id === "command-input") {
+          let sequence = document.querySelector("#command-input").value;
+          document.querySelector("#command-input").value = "";
+          document.querySelector("#window-input").style.display = "none";
+
+          if (sequence == "") {
+          } else if (sequences[sequence]) {
+            application.selectSequence(sequence);
+            application.renderCurrentFrame();
+          } else {
+            application.selectSequence("sequence_not_found");
+            application.renderCurrentFrame();
+          }
+        } else {
+          document.querySelector("#command-input").value = "";
+          setTimeout(
+            () => document.querySelector("#command-input").focus(),
+            100,
+          );
+          document.querySelector("#window-input").style.display = "block";
+        }
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key == " " && document.activeElement.id != "command-input") {
         application.boot();
       }
     });
@@ -702,8 +843,15 @@ var application = {
       y += Math.random() * 50;
       y %= 100;
 
-      const cx = source.position.left || x + "%";
-      const cy = source.position.top || y + "%";
+      var cx, cy;
+
+      if (source.position) {
+        cx = source.position.left;
+        cy = source.position.left;
+      } else {
+        cx = x + "%";
+        cy = y + "%";
+      }
 
       requestAnimationFrame(() => {
         win.style.display = "none";
