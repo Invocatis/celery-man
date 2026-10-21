@@ -13,6 +13,9 @@
             rel="stylesheet"
         />
 
+        <script src="js/define-scatter-images.js"></script>
+        <script src="js/animate-scatter-images.js"></script>
+
         <script src="js/app.js"></script>
     </head>
     <body>
@@ -59,26 +62,7 @@
                     </button>
                 </div>
 
-                <div class="window-content"></div>
-            </div>
-
-            <div style="display: none" class="window" id="window-input">
-                <div class="window-titlebar">
-                    <button type="button" class="btn-close" title="Close">
-                        <i class="fa fa-2x fa-minus"></i>
-                    </button>
-
-                    <span class="title">Paul's COMPUTER</span>
-
-                    <button type="button" class="btn-move" title="Move">
-                        <i class="fa fa-2x fa-caret-up"></i>
-                    </button>
-                    <button type="button" class="btn-move" title="Move">
-                        <i class="fa fa-2x fa-caret-down"></i>
-                    </button>
-                </div>
-
-                <input id="command-input"></input>
+                <input id="command-input" class="window-content"></div>
             </div>
 
             <div style="display: none" class="window" id="window-loader">
@@ -100,6 +84,31 @@
                 <div class="window-content">
                     <progress max="100" value="0"></progress>
                     <h3>Loading, please wait...</h3>
+                </div>
+            </div>
+            <div id="warning" style="display: none">
+                <h1>WARNING</h1>
+
+                <div class="window">
+                    <div class="window-titlebar">
+                        <button type="button" class="btn-close" title="Close">
+                            <i class="fa fa-2x fa-minus"></i>
+                        </button>
+
+                        <span class="title">Cinco Identity Generator 2.5</span>
+
+                        <button type="button" class="btn-move" title="Move">
+                            <i class="fa fa-2x fa-caret-up"></i>
+                        </button>
+                        <button type="button" class="btn-move" title="Move">
+                            <i class="fa fa-2x fa-caret-down"></i>
+                        </button>
+                    </div>
+
+                    <div class="window-content">
+                        <progress max="100" value="0"></progress>
+                        <h2>NSFW</h2>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,114 +1,3 @@
-// import { loadUserSequences } from "./load_user_sequences.js";
-
-var sequences = {
-  celery: {
-    title: "Celery Man",
-    music: "audio/celery_1.mp3",
-    windows: [
-      // { id: "celery1", media: "video/celery1.mp4", position: { top: "15%", left: "5%" } },
-      // { id: "celery2", media: "video/celery2.mp4", position: { top: "20%", left: "45%" } },
-      {
-        id: "celery3",
-        media: "video/celery3.mp4",
-        position: { top: "10%", left: "45%" },
-      },
-      {
-        id: "celery4",
-        media: "video/celery4.mp4",
-        position: { top: "10%", left: "10%" },
-      },
-    ],
-  },
-
-  celery_engaged: {
-    title: "Celery Man",
-    music: "audio/celery_2.mp3",
-    windows: [
-      {
-        id: "celery1",
-        media: "video/celery1.mp4",
-        position: { top: "10%", left: "10%" },
-      },
-      {
-        id: "celery2",
-        media: "video/celery2.mp4",
-        position: { top: "10%", left: "45%" },
-      },
-      // { id: "celery3", media: "video/celery3.mp4", position: { top: "40%", left: "25%" } },
-      // { id: "celery4", media: "video/celery4.mp4", position: { top: "10%", left: "65%" } },
-    ],
-  },
-
-  oyster: {
-    title: "OYSTER",
-    music: "audio/oyster.mp3",
-    windows: [
-      {
-        id: "oyster1",
-        media: "video/oyster1.mp4",
-      },
-      {
-        id: "oyster2",
-        media: "video/oyster2.mp4",
-        position: { top: "40%", left: "45%" },
-      },
-    ],
-  },
-
-  tayne: {
-    title: "Tayne",
-    music: "audio/tayne.mp3",
-    windows: [
-      {
-        id: "tayne1",
-        media: "video/tayne1.mp4",
-        position: { top: "20%", left: "35%" },
-      },
-      {
-        id: "tayne2",
-        media: "video/tayne2.mp4",
-        position: { top: "35%", left: "65%" },
-      },
-      {
-        id: "tayne3",
-        media: "video/tayne3.mp4",
-        position: { top: "10%", left: "5%" },
-      },
-      {
-        id: "tayne4",
-        media: "video/tayne4.mp4",
-        position: { top: "25%", left: "20%" },
-      },
-      {
-        id: "tayne5",
-        media: "video/tayne5.mp4",
-        position: { top: "5%", left: "50%" },
-      },
-      {
-        id: "tayne18",
-        media: "video/tayne18.png",
-        position: { top: "50%", left: "50%" },
-      },
-    ],
-  },
-
-  mozza: {
-    title: "MOZZA-RELL",
-    windows: [
-      {
-        id: "mozza1",
-        media: "video/mozza1.mp4",
-        position: { top: "10%", left: "5%" },
-      },
-      {
-        id: "mozza2",
-        media: "video/mozza2.mp4",
-        position: { top: "30%", left: "35%" },
-      },
-    ],
-  },
-};
-
 var sequences = {
   sequence_not_found: {
     frames: [
@@ -233,6 +122,7 @@ var sequences = {
     keybinding: "t",
     frames: [
       {
+        music: null,
         clear: true,
         prompt: "I have a BETA sequence I have been working on.",
         audio: "audio/voice/beta_sequence.mp3",
@@ -303,7 +193,7 @@ var application = {
 
   changeTextPrompt: async function (text) {
     if (text == "") {
-      document.querySelector("#window-prompt .window-content").innerHTML = "";
+      document.querySelector("#window-prompt .window-content").value = "";
       return;
     }
 
@@ -311,7 +201,7 @@ var application = {
     var textPromptContent = "";
     for (const char of text) {
       textPromptContent += char;
-      document.querySelector("#window-prompt .window-content").innerHTML =
+      document.querySelector("#window-prompt .window-content").value =
         textPromptContent;
       await new Promise((r) => setTimeout(r, 50));
     }
@@ -364,6 +254,11 @@ var application = {
 
     synth.cancel();
     synth.speak(u);
+  },
+
+  say: function (text) {
+    application.changeTextPrompt(text);
+    application.speak(text);
   },
 
   addWindows: async function (title, windows) {
@@ -425,7 +320,8 @@ var application = {
     state.frame++;
   },
 
-  selectSequence: function (sequence) {
+  selectSequence: function (sequence_name) {
+    let sequence = sequences[sequence_name];
     if (state.sequence == sequence) {
       application.cycleFrame(sequence);
     } else {
@@ -435,9 +331,13 @@ var application = {
   },
 
   renderCurrentFrame: async function () {
-    if (state.frame >= sequences[state.sequence].frames.length) return;
-    let sequence = sequences[state.sequence];
+    if (state.frame >= state.sequence.frames.length) return;
+    let sequence = state.sequence;
     let frame = sequence.frames[state.frame];
+
+    if (frame.music == null) {
+      application.music.stop();
+    }
 
     if (frame.clear) {
       application.clearVideos();
@@ -665,10 +565,23 @@ var application = {
 
   sequenceLoadingStatements: [
     "add sequence: {sequence}",
-    "initalizing: {sequence}",
+    "initializing: {sequence}",
     "booting into: {sequence}",
     "let's give {sequence} a try",
     "perhaps {sequence} will suit your fancy",
+    "this one looks like a tasty piece of meat",
+    "confabulating {sequence}",
+  ],
+
+  curseWords: ["fuck", "shit", "damn", "cunt", "ass", "dick", "prick"],
+
+  retorts: [
+    "no u",
+    "your mom",
+    "eat my ass",
+    "proud of you",
+    "c'mon",
+    "don't be like that",
   ],
 
   selectRandom: function (collection) {
@@ -722,6 +635,7 @@ var application = {
                   music[0].name
                 : "",
             windows: windows,
+            loading: true,
             prompt: application
               .selectRandom(application.sequenceLoadingStatements)
               .replace("{sequence}", folder.name),
@@ -730,6 +644,66 @@ var application = {
       };
 
       sequences[folder.name] = sequence;
+    }
+  },
+
+  executors: {
+    clear: {
+      executor: () => {
+        application.clearVideos();
+        application.music.stop();
+      },
+    },
+    load: {
+      executor: (sequence) => {
+        application.executors.clear.executor();
+        application.executors["add sequence"].executor(sequence);
+      },
+    },
+    "add sequence": {
+      usage: "add sequence: {{SEQUENCE}}",
+      executor: (sequence) => {
+        console.log("Add sequence: " + sequence);
+        if (sequences[sequence]) {
+          console.log(sequences[sequence]);
+          application.selectSequence(sequence);
+          application.renderCurrentFrame();
+        } else {
+          application.selectSequence("sequence_not_found");
+        }
+      },
+    },
+  },
+
+  executeCommand: async function (command) {
+    if (application.curseWords.filter((c) => command.includes(c)).length != 0) {
+      application.say(application.selectRandom(application.retorts));
+      return;
+    }
+
+    let tokens = command
+      .split(/:/)
+      .filter((t) => t != "")
+      .map((t) => t.trim());
+
+    if (tokens.length === 0 || tokens.length > 2) {
+      application.say("Malformed command");
+    } else {
+      let [command, args_string] = tokens;
+      let args = args_string ? args_string.split(/\s+/) : [];
+      console.log(`Executing command ${command} : ${args}`);
+      let executor = application.executors[command];
+      console.log(executor);
+      if (!executor) {
+        application.say("Command not recognized");
+      } else {
+        try {
+          executor.executor(...args);
+        } catch (ex) {
+          console.log(ex);
+          application.say(executor.usage);
+        }
+      }
     }
   },
 
@@ -743,6 +717,28 @@ var application = {
     application.show("#window-welcome");
 
     await application.loadWelcome();
+
+    // application.keybinding("c", "celery");
+    // application.keybinding("o", "oyster");
+    // application.keybinding("t", "tayne");
+    // application.keybinding("s", "mozza");
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key == "Enter") {
+        if (document.activeElement.id === "command-input") {
+          let command = document.querySelector("#command-input").value;
+          document.querySelector("#command-input").value = "";
+          application.executeCommand(command);
+        } else {
+          document.querySelector("#command-input").value = "";
+          setTimeout(
+            () => document.querySelector("#command-input").focus(),
+            100,
+          );
+          document.querySelector("#window-input").style.display = "block";
+        }
+      }
+    });
 
     application.selectSequence("base");
     application.renderCurrentFrame();
@@ -762,44 +758,12 @@ var application = {
   },
 
   initialize: async function () {
-    application.loadExternalSequences();
-
-    application.keybinding("c", "celery");
-    application.keybinding("o", "oyster");
-    application.keybinding("t", "tayne");
-    application.keybinding("s", "mozza");
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key == "Enter") {
-        if (document.activeElement.id === "command-input") {
-          let sequence = document.querySelector("#command-input").value;
-          document.querySelector("#command-input").value = "";
-          document.querySelector("#window-input").style.display = "none";
-
-          if (sequence == "") {
-          } else if (sequences[sequence]) {
-            application.selectSequence(sequence);
-            application.renderCurrentFrame();
-          } else {
-            application.selectSequence("sequence_not_found");
-            application.renderCurrentFrame();
-          }
-        } else {
-          document.querySelector("#command-input").value = "";
-          setTimeout(
-            () => document.querySelector("#command-input").focus(),
-            100,
-          );
-          document.querySelector("#window-input").style.display = "block";
-        }
-      }
-    });
-
     document.addEventListener("keydown", (event) => {
       if (event.key == " " && document.activeElement.id != "command-input") {
         application.boot();
       }
     });
+    application.loadExternalSequences();
   },
 
   stopCurrentSequence: function () {
@@ -833,36 +797,39 @@ var application = {
   },
 
   placeVideoWindow: (() => {
-    var x = 0;
-    var y = 0;
+    var x = Math.floor(100 * Math.random());
+    var y = Math.floor(100 * Math.random());
 
     return function (win, source) {
-      x += Math.random() * 50;
-      x %= 100;
-
-      y += Math.random() * 50;
-      y %= 100;
-
-      var cx, cy;
-
-      if (source.position) {
-        cx = source.position.left;
-        cy = source.position.left;
-      } else {
-        cx = x + "%";
-        cy = y + "%";
-      }
+      let desktop = document.getElementById("desktop");
 
       requestAnimationFrame(() => {
         win.style.display = "none";
-        document
-          .getElementById("desktop")
-          .insertAdjacentElement("beforeend", win);
+        desktop.insertAdjacentElement("beforeend", win);
 
         requestAnimationFrame(() => {
-          win.style.left = `clamp(0px, ${cx}, calc(100% - ${win.offsetWidth}px))`;
-          win.style.top = `clamp(0px, ${cy}, calc(100% - ${win.offsetHeight}px))`;
-          win.style.display = "block";
+          var cx, cy;
+          if (source.position) {
+            cx = source.position.left;
+            cy = source.position.left;
+          } else {
+            x += 71;
+            x %= 100;
+
+            y += 71;
+            y %= 100;
+
+            cx = (x % 80) + "%";
+            cy = (y % 50) + "%";
+            console.log(cx);
+            console.log(cy);
+          }
+
+          requestAnimationFrame(() => {
+            win.style.left = cx;
+            win.style.top = cy;
+            win.style.display = "block";
+          });
         });
       });
 
