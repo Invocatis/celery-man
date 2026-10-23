@@ -1,7 +1,7 @@
 let desktop = {
   changeTextPrompt: async function (text) {
     if (text == "") {
-      document.querySelector("#window-prompt .window-content").value = "";
+      document.querySelector("#window-prompt .window-content").innerHTML = "";
       return;
     }
 
@@ -9,7 +9,7 @@ let desktop = {
     var textPromptContent = "";
     for (const char of text) {
       textPromptContent += char;
-      document.querySelector("#window-prompt .window-content").value =
+      document.querySelector("#window-prompt .window-content").innerHTML =
         textPromptContent;
       await new Promise((r) => setTimeout(r, 50));
     }
@@ -138,16 +138,15 @@ let desktop = {
 
   lock: function () {
     state.lock = true;
-    document.querySelector("#command-input").disable = true;
   },
 
   unlock: function () {
     state.lock = false;
-    document.querySelector("#command-input").disable = false;
   },
 
   boot: async function () {
     console.log("Booting...");
+    state.booted = true;
 
     music.stop();
 
@@ -157,33 +156,39 @@ let desktop = {
 
     await desktop.loadWelcome();
 
-    // application.keybinding("c", "celery");
-    // application.keybinding("o", "oyster");
-    // application.keybinding("t", "tayne");
-    // application.keybinding("s", "mozza");
-
     document.addEventListener("keydown", (event) => {
       if (state.lock) return;
 
-      if (event.key == "Enter") {
-        if (document.activeElement.id === "command-input") {
-          let command = document.querySelector("#command-input").value;
-          document.querySelector("#command-input").value = "";
+      let command_input = document.querySelector("#command-input");
 
-          document.querySelector("#command-input").blur();
-          application.executeCommand(command);
-        } else {
-          document.querySelector("#command-input").value = "";
-          setTimeout(
-            () => document.querySelector("#command-input").focus(),
-            100,
-          );
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+      if (state.inputing && event.key == "Enter") {
+        state.inputing = false;
+        let command_string = command_input.innerHTML;
+        command_input.innerHTML = "";
+
+        command_input.blur();
+        command.execute(command_string);
+      } else if (state.inputing && event.key == "Backspace") {
+        command_input.innerHTML = command_input.innerHTML.slice(0, -1);
+      } else if (!state.inputing && event.key == " ") {
+        sounds.beep();
+        listen();
+      } else if (event.key.length === 1) {
+        if (!state.inputing) {
+          command_input.innerHTML = "";
+          state.inputing = true;
         }
+
+        command_input.innerHTML += event.key;
       }
     });
 
-    application.selectSequence("base");
-    application.renderCurrentFrame();
+    application.selectSequence(sequences["base"]);
+    await application.renderCurrentFrame();
+
+    listen();
   },
 
   hide: function (selector) {

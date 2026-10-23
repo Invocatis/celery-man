@@ -183,7 +183,6 @@ const sequenceLoadingStatements = [
   "let's give {sequence} a try",
   "perhaps {sequence} will suit your fancy",
   "this one looks like a tasty piece of meat",
-  "confabulating {sequence}",
 ];
 
 let sequence = {
