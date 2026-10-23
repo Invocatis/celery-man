@@ -1,0 +1,25 @@
+{
+  "title": "Oyster",
+  "prompt": null,
+  "audio": "audio/voice/add_sequence_oyster.mp3",
+  "music": "audio/music/oyster.mp3",
+  "loading": false,
+  "wait": 500,
+  "windows": [
+    {
+      "id": "oyster1",
+      "media": "oyster1.mp4",
+      "position": { "top": "10%", "left": "25%" }
+    },
+    {
+      "id": "oyster2",
+      "media": "oyster2.mp4",
+      "position": { "top": "25%", "left": "5%" }
+    },
+    {
+      "id": "oyster3",
+      "media": "oyster3.mp4",
+      "position": { "top": "40%", "left": "45%" }
+    }
+  ]
+}

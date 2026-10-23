@@ -1,0 +1,21 @@
+{
+  "title": "Celery Man",
+  "loading": true,
+  "prompt": "Yes, Paul.",
+  "audio": "audio/voice/yes_paul.mp3",
+  "beep": true,
+  "clear": true,
+  "music": "audio/music/celery.mp3",
+  "windows": [
+    {
+      "id": "celery3",
+      "media": "celery3.mp4",
+      "position": { "top": "10%", "left": "45%" }
+    },
+    {
+      "id": "celery4",
+      "media": "celery4.mp4",
+      "position": { "top": "10%", "left": "10%" }
+    }
+  ]
+}

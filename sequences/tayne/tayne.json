@@ -1,0 +1,54 @@
+[
+  {
+    "music": null,
+    "clear": true,
+    "prompt": "I have a BETA sequence I have been working on.",
+    "audio": "audio/voice/beta_sequence.mp3",
+    "wait": 50
+  },
+  {
+    "prompt": "Would you like to see it?",
+    "audio": "audio/voice/would_you_like_to_see_it.mp3",
+    "waitForSpeech": ["sure"]
+  },
+  {
+    "loading": true,
+    "prompt": "",
+    "music": "audio/music/tayne.mp3",
+    "title": "Tayne",
+    "windows": [
+      {
+        "id": "tayne1",
+        "media": "video/tayne1.mp4",
+        "position": { "top": "20%", "left": "55%" }
+      },
+      {
+        "id": "tayne2",
+        "media": "video/tayne2.mp4",
+        "position": { "top": "20%", "left": "5%" }
+      },
+      {
+        "id": "tayne18",
+        "media": "video/tayne18.png",
+        "position": { "top": "30%", "left": "30%" }
+      }
+    ]
+  },
+  {
+    "clear": true,
+    "windows": [
+      {
+        "media": "video/tayne3.mp4",
+        "position": { "top": "30%", "left": "15%" }
+      },
+      {
+        "media": "video/tayne3.mp4",
+        "position": { "top": "30%", "left": "40%" }
+      },
+      {
+        "media": "video/tayne3.mp4",
+        "position": { "top": "30%", "left": "65%" }
+      }
+    ]
+  }
+]

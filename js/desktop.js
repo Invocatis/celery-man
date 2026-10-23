@@ -17,31 +17,9 @@ let desktop = {
     await new Promise((r) => setTimeout(r, 300));
   },
 
-  speak: function (text) {
-    const synth = window.speechSynthesis;
-    const voices = synth.getVoices();
-
-    // Prefer a male-sounding English voice if one exists, otherwise use any English voice
-    const voice =
-      voices.find((v) => console.log(v)) ||
-      voices.find((v) => v.lang.startsWith("en")) ||
-      voices[0];
-
-    const u = new SpeechSynthesisUtterance(text);
-    u.voice = voice;
-    u.pitch = 0; // lowest allowed (range 0–2)
-    u.rate = 0.9; // clip is fast, about 5 syllables/sec
-    u.volume = 1;
-
-    console.log(voice);
-
-    synth.cancel();
-    synth.speak(u);
-  },
-
   say: function (text) {
     desktop.changeTextPrompt(text);
-    desktop.speak(text);
+    voice.speak(text);
   },
 
   addWindows: async function (title, windows) {
@@ -144,6 +122,23 @@ let desktop = {
     state.lock = false;
   },
 
+  sendCommand() {
+    let command_input = document.querySelector("#command-input");
+
+    state.inputing = false;
+    let command_string = command_input.innerHTML;
+
+    if (
+      state.sequence.clearTextPrompt ||
+      state.sequence.clearTextPrompt === undefined
+    ) {
+      command_input.innerHTML = "";
+    }
+
+    command_input.blur();
+    command.execute(command_string);
+  },
+
   boot: async function () {
     console.log("Booting...");
     state.booted = true;
@@ -156,38 +151,54 @@ let desktop = {
 
     await desktop.loadWelcome();
 
+    let typing_queue = Promise.resolve();
+
     document.addEventListener("keydown", (event) => {
-      if (state.lock) return;
+      typing_queue.then(() => {
+        if (state.lock) return;
 
-      let command_input = document.querySelector("#command-input");
+        let command_input = document.querySelector("#command-input");
 
-      if (event.ctrlKey || event.altKey || event.metaKey) return;
+        if (state.sequence.autoType) {
+          if (!state.inputing) {
+            command_input.innerHTML = "";
+            state.inputing = true;
+          }
 
-      if (state.inputing && event.key == "Enter") {
-        state.inputing = false;
-        let command_string = command_input.innerHTML;
-        command_input.innerHTML = "";
-
-        command_input.blur();
-        command.execute(command_string);
-      } else if (state.inputing && event.key == "Backspace") {
-        command_input.innerHTML = command_input.innerHTML.slice(0, -1);
-      } else if (!state.inputing && event.key == " ") {
-        sounds.beep();
-        listen();
-      } else if (event.key.length === 1) {
-        if (!state.inputing) {
-          command_input.innerHTML = "";
-          state.inputing = true;
+          command_input.innerHTML += state.sequence.autoType.slice(0, 1);
+          state.sequence.autoType = state.sequence.autoType.slice(1);
+          return;
         }
 
-        command_input.innerHTML += event.key;
-      }
+        if (state.sequence.autoType === "") {
+          state.sequence.autoType = null;
+          desktop.sendCommand();
+          return;
+        }
+
+        if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+        if (state.inputing && event.key == "Enter") {
+          desktop.sendCommand();
+        } else if (state.inputing && event.key == "Backspace") {
+          command_input.innerHTML = command_input.innerHTML.slice(0, -1);
+        } else if (!state.inputing && event.key == " ") {
+          sounds.beep();
+          listen();
+        } else if (event.key.length === 1) {
+          if (!state.inputing) {
+            command_input.innerHTML = "";
+            state.inputing = true;
+          }
+
+          command_input.innerHTML += event.key;
+        }
+      });
     });
 
-    application.selectSequence(sequences["base"]);
-    await application.renderCurrentFrame();
+    await application.renderSequence(sequences.base);
 
+    listen_to_all();
     listen();
   },
 

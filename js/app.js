@@ -1,97 +1,101 @@
 var state = {
   sequence: null,
-  frame: null,
   music: { path: null, player: null },
   lock: true,
   inputing: false,
   booted: false,
+  listening: false,
 };
 
 var application = {
-  cycleFrame: function (sequence) {
-    if (state.frame >= frames.length) return;
-    state.frame++;
-  },
+  sequenceLoadingStatements: [
+    "add sequence: {sequence}",
+    "initializing: {sequence}",
+    "booting into: {sequence}",
+    "let's give {sequence} a try",
+    "perhaps {sequence} will suit your fancy",
+    "this one looks like a tasty piece of meat",
+  ],
 
-  selectSequence: function (sequence) {
-    console.log("selectSequence");
-    if (state.sequence == sequence) {
-      application.cycleFrame(sequence);
+  renderSequence: async function (sequence) {
+    state.sequence = sequence;
+    if (Array.isArray(sequence)) {
+      for (s of sequence) {
+        await application.renderSingleSequence(s);
+      }
     } else {
-      state.sequence = sequence;
-      state.frame = 0;
+      application.renderSingleSequence(sequence);
     }
   },
 
-  renderCurrentFrame: async function () {
+  renderSingleSequence: async function (sequence) {
     desktop.lock();
-    if (state.frame >= state.sequence.frames.length) return;
-    let sequence = state.sequence;
-    let frame = sequence.frames[state.frame];
 
-    if (frame.audio) {
-      await new Audio(frame.audio).play();
-    } else if (frame.prompt) {
-      desktop.speak(frame.prompt);
+    if (sequence.audio) {
+      await new Audio(sequence.audio).play();
+    } else if (sequence.prompt) {
+      voice.speak(sequence.prompt);
     }
 
-    if (frame.prompt) {
-      await desktop.changeTextPrompt(frame.prompt);
+    if (sequence.prompt === "random") {
+      util
+        .selectRandom(application.sequenceLoadingStatements)
+        .replace("{sequence}", sequences);
+    } else if (sequence.prompt) {
+      await desktop.changeTextPrompt(sequence.prompt);
     }
 
-    if (frame.loading) {
+    if (sequence.loading) {
       console.log("loading ...");
       await desktop.loadingWindow("#window-loader");
     }
 
-    if (frame.music == null) {
+    if (sequence.music == null) {
       music.stop();
     }
 
-    if (frame.clear) {
+    if (sequence.clear) {
       desktop.clearVideos();
       desktop.hide("#window-welcome");
     }
 
-    if (frame.element) {
-      desktop.show(frame.element);
+    if (sequence.element) {
+      desktop.show(sequence.element);
     }
 
-    if (frame.music) {
-      new Audio(frame.musi);
+    if (sequence.music) {
+      new Audio(sequence.musi);
     }
 
-    if (frame.beep) {
+    if (sequence.beep) {
       sounds.beep();
     }
 
-    if (frame.flash) {
+    if (sequence.flash) {
       // application.flashVideos();
     }
 
-    if (frame.sequence) {
-      console.log(sequences[frame.sequence]);
-      desktop.addWindows(frame.sequence, sequences[frame.sequence].windows);
-      music.start(frame.music);
-    }
-
-    if (frame.windows) {
-      console.log(frame.windows);
-      desktop.addWindows(frame.title, frame.windows);
-    }
-
-    if (frame.music) {
-      console.log(frame.music);
-      music.start(frame.music);
-    }
-
-    if (frame.waitAndProgress) {
-      await new Promise((r) => setTimeout(r, frame.waitAndProgress)).then(
-        async () => {
-          state.frame++;
-          await application.renderCurrentFrame();
-        },
+    if (sequence.sequence) {
+      console.log(sequences[sequence.sequence]);
+      desktop.addWindows(
+        sequence.sequence,
+        sequences[sequence.sequence].windows,
       );
+      music.start(sequence.music);
+    }
+
+    if (sequence.windows) {
+      console.log(sequence.windows);
+      desktop.addWindows(sequence.title, sequence.windows);
+    }
+
+    if (sequence.music) {
+      console.log(sequence.music);
+      music.start(sequence.music);
+    }
+
+    if (sequence.wait) {
+      await new Promise((r) => setTimeout(r, sequence.wait));
     }
     desktop.unlock();
   },

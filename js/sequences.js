@@ -1,29 +1,27 @@
 var sequences = {
   sequence_not_found: {
-    frames: [
-      {
-        prompt: "Sequence not found",
-      },
-    ],
+    prompt: "Sequence not found",
   },
   clear: {
-    frames: [{ clear: true, music: null, prompt: "" }],
+    clear: true,
+    music: null,
+    prompt: "",
   },
-  base: {
-    frames: [
-      {
-        audio: "audio/voice/good_morning_paul.mp3",
-        prompt: "Good morning, Paul.",
-        element: "#window-welcome",
-        waitAndProgress: 500,
-      },
-      {
-        audio: "audio/voice/what_will_your.mp3",
-        prompt: "What will your first sequence of the day be?",
-        element: "#window-welcome",
-      },
-    ],
-  },
+  base: [
+    {
+      audio: "audio/voice/good_morning_paul.mp3",
+      prompt: "Good morning, Paul.",
+      element: "#window-welcome",
+      wait: 500,
+    },
+    {
+      audio: "audio/voice/what_will_your.mp3",
+      prompt: "What will your first sequence of the day be?",
+      element: "#window-welcome",
+    },
+  ],
+};
+let sequences_old = {
   celery: {
     keybinding: "c",
     frames: [
@@ -176,16 +174,76 @@ var sequences = {
   },
 };
 
-const sequenceLoadingStatements = [
-  "add sequence: {sequence}",
-  "initializing: {sequence}",
-  "booting into: {sequence}",
-  "let's give {sequence} a try",
-  "perhaps {sequence} will suit your fancy",
-  "this one looks like a tasty piece of meat",
-];
-
 let sequence = {
+  loadSequence: async function (path) {
+    let root = "http://localhost:8080/sequences/" + path.join("/") + "/";
+    let files = await fetch(root).then((r) => r.json());
+
+    let music = files.filter((x) => x.name.endsWith(".mp3"));
+
+    let visualMedia = files.filter(
+      (x) =>
+        x.name.endsWith(".mp4") ||
+        x.name.endsWith(".png") ||
+        x.name.endsWith(".jpg"),
+    );
+
+    let windows = [];
+    for (let file of visualMedia) {
+      windows.push({
+        media: root + file.name,
+      });
+    }
+
+    let modes_array = await Promise.all(
+      files
+        .filter((f) => f.type === "directory")
+        .map(async (f) => {
+          let p = path.slice();
+          p.push(f.name);
+          let s = await sequence.loadSequence(p);
+          return [f.name, s];
+        }),
+    );
+
+    let modes = Object.fromEntries(modes_array);
+
+    let f = files.filter((x) => x.name.endsWith(".json"));
+    var sequence_stub = null;
+    if (f.length != 0) {
+      let r = await fetch(root + f[0].name);
+
+      let body = await r.text();
+
+      sequence_stub = JSON.parse(body);
+
+      if (sequence_stub.windows) {
+        sequence_stub.windows.forEach((w) => (w.media = root + w.media));
+      }
+
+      sequence_stub.title = sequence_stub.title || path[path.length - 1];
+      sequence_stub.music =
+        sequence_stub.music || music.length > 0 ? root + music[0].name : "";
+      sequence_stub.windows = sequence_stub.windows || windows;
+      sequence_stub.loading =
+        sequence_stub.loading === undefined ? false : true;
+      sequence_stub.modes = sequence_stub.modes || modes;
+      sequence_stub.prompt =
+        sequence_stub.prompt === null ? null : sequence_stub.prompt || "random";
+    } else {
+      sequence_stub = {
+        title: path[path.length - 1],
+        music: music.length > 0 ? root + music[0].name : "",
+        windows: windows,
+        loading: true,
+        modes: modes,
+        prompt: "random",
+      };
+    }
+
+    return sequence_stub;
+  },
+
   loadExternalSequences: async function () {
     console.log("Loading external sequnces");
     let folders = await fetch("http://localhost:8080/sequences/").then((r) =>
@@ -193,48 +251,7 @@ let sequence = {
     );
 
     for (let folder of folders) {
-      let files = await fetch(
-        "http://localhost:8080/sequences/" + folder.name,
-      ).then((r) => r.json());
-
-      let music = files.filter((x) => x.name.endsWith(".mp3"));
-
-      let visualMedia = files.filter(
-        (x) =>
-          x.name.endsWith(".mp4") ||
-          x.name.endsWith(".png") ||
-          x.name.endsWith("jpg"),
-      );
-
-      let windows = [];
-      for (let file of visualMedia) {
-        windows.push({
-          media:
-            "http://localhost:8080/sequences/" + folder.name + "/" + file.name,
-        });
-      }
-
-      let sequence = {
-        frames: [
-          {
-            title: folder.name,
-            music:
-              music.length > 0
-                ? "http://localhost:8080/sequences/" +
-                  folder.name +
-                  "/" +
-                  music[0].name
-                : "",
-            windows: windows,
-            loading: true,
-            prompt: util
-              .selectRandom(sequenceLoadingStatements)
-              .replace("{sequence}", folder.name),
-          },
-        ],
-      };
-
-      sequences[folder.name] = sequence;
+      sequences[folder.name] = await sequence.loadSequence([folder.name]);
     }
   },
 };

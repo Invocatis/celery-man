@@ -1,0 +1,18 @@
+{
+  "title": "Celery Man",
+  "prompt": "4d3d3d3 Engaged.",
+  "audio": "audio/voice/4d3d3d3.mp3",
+  "loading": false,
+  "autoType": "add sequence: OYSTER",
+  "clearTextPrompt": false,
+  "windows": [
+    {
+      "media": "celery1.mp4",
+      "position": { "top": "10%", "left": "10%" }
+    },
+    {
+      "media": "celery2.mp4",
+      "position": { "top": "10%", "left": "45%" }
+    }
+  ]
+}
