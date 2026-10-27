@@ -73,7 +73,7 @@ let command = {
         .filter(([name, _]) => command_string.includes(name))
         .map(([name, sequence]) => sequence)[0];
 
-      let mode = Object.entrieHP-Officejet-Pro-8610s(sequence.modes)
+      let mode = Object.entries(sequence.modes)
         .filter(([name, _]) => command_string.includes(name))
         .map(([name, mode]) => mode)[0];
 

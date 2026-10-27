@@ -6,7 +6,7 @@ services:
       - "443:443"
     volumes:
       - .:/app/:ro
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro \
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./.https/certs:/etc/nginx/certs
     depends_on:
       - print-server
@@ -18,7 +18,11 @@ services:
     volumes:
       - ./print-server:/app
       - ./sequences:/app/sequences
-      - /run/cups/cups.sock:/run/cups/cups.sock
+      - /etc/cups/:/etc/cups/
+    environment: 
+      CUPS_SERVER: "nginx:631"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: bun run server.js
     expose:
       - "3000"
