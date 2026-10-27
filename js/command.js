@@ -12,9 +12,20 @@ let command = {
   ],
 
   aliases: [
-    [/(4|d|3|\s+){3,}/, "4d3d3d3"],
     [/.?ick (up|out)/, "engage"],
     [/new sequence/, "load sequence tayne"],
+    [/nude/, "engage nsfw"],
+    [/generate/, "engage"],
+    [/(4|d|3|\s+){3,}/, "4d3d3d3"],
+    [/boot/, "load"],
+  ],
+
+  misheardWords: [
+    [/at sequence/, "add sequence"],
+    [/call/, "kyle"],
+    [/sequins/, "sequence"],
+    [/cabin/, "gavin"],
+    [/little/, "load up"],
   ],
 
   executors: {
@@ -26,7 +37,7 @@ let command = {
       command.executors.clear();
       command.executors["add sequence"](command_string);
     },
-    "add sequence": (command_string) => {
+    "add sequence": async (command_string) => {
       console.log("Add sequence: " + command_string);
       let matching = Object.entries(sequences)
         .filter(([name, sequence]) => command_string.includes(name))
@@ -34,12 +45,13 @@ let command = {
 
       if (matching.length > 0) {
         // TODO add multiple
-        application.renderSequence(matching[0]);
+        state.sequence = matching[0];
+        await application.renderSequence(matching[0]);
       } else {
-        application.renderSequence(sequences["sequence_not_found"]);
+        await application.renderSequence(sequences["sequence_not_found"]);
       }
     },
-    engage: (command_string) => {
+    engage: async (command_string) => {
       if (!state.sequence) {
         desktop.say("Sequence not selected");
         return;
@@ -54,7 +66,7 @@ let command = {
         return;
       }
 
-      application.renderSequence(matching[0]);
+      await application.renderSequence(matching[0]);
     },
   },
 
@@ -74,6 +86,13 @@ let command = {
       }
     }
 
+    for (let [from, to] of command.misheardWords) {
+      if (from.test(command_string)) {
+        console.log("-------", from, to);
+        command_string = command_string.replace(from, to);
+      }
+    }
+
     console.log("execute with alias: " + command_string);
 
     let matching = Object.entries(command.executors)
@@ -90,7 +109,7 @@ let command = {
     if (matching.length === 0) {
       desktop.say("Malformed command");
     } else {
-      matching[0](command_string);
+      await matching[0](command_string);
     }
   },
 };

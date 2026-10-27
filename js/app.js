@@ -1,3 +1,5 @@
+const host = window.location.host;
+
 var state = {
   sequence: null,
   music: { path: null, player: null },
@@ -5,6 +7,7 @@ var state = {
   inputing: false,
   booted: false,
   listening: false,
+  listen: {},
 };
 
 var application = {
@@ -18,31 +21,39 @@ var application = {
   ],
 
   renderSequence: async function (sequence) {
-    state.sequence = sequence;
     if (Array.isArray(sequence)) {
       for (s of sequence) {
         await application.renderSingleSequence(s);
       }
     } else {
-      application.renderSingleSequence(sequence);
+      await application.renderSingleSequence(sequence);
     }
   },
 
   renderSingleSequence: async function (sequence) {
     desktop.lock();
-
-    if (sequence.audio) {
-      await new Audio(sequence.audio).play();
-    } else if (sequence.prompt) {
-      voice.speak(sequence.prompt);
+    if (sequence.music == null) {
+      music.fadeOut();
     }
 
-    if (sequence.prompt === "random") {
-      util
+    if (sequence.nsfw) {
+      await application.renderSequence(sequences.nsfw);
+    }
+
+    if (sequence.warning && !state.warning) {
+      desktop.warning();
+    } else {
+      state.warning = false;
+    }
+
+    if (sequence.prompt == "random") {
+      let prompt = util
         .selectRandom(application.sequenceLoadingStatements)
-        .replace("{sequence}", sequences);
+        .replace("{sequence}", sequence.title);
+
+      await desktop.say(prompt);
     } else if (sequence.prompt) {
-      await desktop.changeTextPrompt(sequence.prompt);
+      await desktop.say(sequence.prompt);
     }
 
     if (sequence.loading) {
@@ -50,21 +61,16 @@ var application = {
       await desktop.loadingWindow("#window-loader");
     }
 
-    if (sequence.music == null) {
-      music.stop();
+    if (sequence.audio) {
+      sounds.play(sequence.audio);
     }
 
     if (sequence.clear) {
       desktop.clearVideos();
-      desktop.hide("#window-welcome");
     }
 
     if (sequence.element) {
       desktop.show(sequence.element);
-    }
-
-    if (sequence.music) {
-      new Audio(sequence.musi);
     }
 
     if (sequence.beep) {
@@ -75,18 +81,17 @@ var application = {
       // application.flashVideos();
     }
 
-    if (sequence.sequence) {
-      console.log(sequences[sequence.sequence]);
-      desktop.addWindows(
-        sequence.sequence,
-        sequences[sequence.sequence].windows,
-      );
-      music.start(sequence.music);
-    }
-
     if (sequence.windows) {
       console.log(sequence.windows);
-      desktop.addWindows(sequence.title, sequence.windows);
+      desktop.addWindows(
+        sequence.title,
+        sequence.windows.slice(0, 5),
+        sequence.nsfw == null ? true : !sequence.nsfw,
+      );
+
+      if (sequence.windows.length > 5) {
+        desktop.cycleWindows(sequence);
+      }
     }
 
     if (sequence.music) {
@@ -96,6 +101,14 @@ var application = {
 
     if (sequence.wait) {
       await new Promise((r) => setTimeout(r, sequence.wait));
+    }
+
+    if (sequence.waitForSpeech) {
+      await voice_recognition.listen_for(sequence.waitForSpeech);
+    }
+
+    if (sequence.waitForAffirmation) {
+      await voice_recognition.listen_for_affirmation();
     }
     desktop.unlock();
   },

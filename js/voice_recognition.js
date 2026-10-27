@@ -1,49 +1,99 @@
-function listen() {
-  state.listening = true;
-}
+let voice_recognition = {
+  listen: function () {
+    state.listening = true;
+  },
 
-function listen_to_all() {
-  console.log("listening ...");
+  affirmations: [
+    "yes",
+    "yea",
+    "yeah",
+    "okay",
+    "ok",
+    "sure",
+    "why not",
+    "alright",
+    "all right",
+  ],
 
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+  listen_for_affirmation: function (callback, persist = false) {
+    return voice_recognition.listen_for(
+      voice_recognition.affirmations,
+      callback,
+      persist,
+    );
+  },
 
-  if (!SpeechRecognition) {
-    status.textContent = "Speech recognition is unsupported.";
-  } else {
-    const recognition = new SpeechRecognition();
+  listen_for: function (triggers, callback, persist = false) {
+    console.log("Listening for: " + triggers);
 
-    recognition.lang = "en-US";
-    recognition.continuous = true;
-    recognition.interimResults = false;
+    let resolve;
+    let promise = new Promise((r) => (resolve = r));
+    state.listening = false;
 
-    recognition.onresult = (event) => {
-      let transcript = event.results[event.results.length - 1][0].transcript
-        .toLowerCase()
-        .trim();
+    triggers.forEach((text) => {
+      state.listen[text] = () => {
+        triggers.forEach((text) => {
+          if (!persist) {
+            delete state.listen[text];
+          }
+        });
 
-      console.log("heard: " + transcript);
+        console.log(callback);
 
-      console.log("computer" === transcript);
+        if (callback) {
+          callback();
+        }
+        resolve();
+      };
+    });
 
-      if (state.listening) {
-        command.execute(transcript);
-        state.listening = false;
-      } else if (transcript === "computer") {
-        state.listening = true;
-        desktop.say("Yes?");
-      }
-    };
+    return promise;
+  },
 
-    recognition.onerror = (event) => {
-      console.log("Error: " + event.error);
-    };
+  listen_to_all: function () {
+    console.log("listening ...");
 
-    recognition.onend = () => {
-      console.log("Stopped.");
-      listen_to_all();
-    };
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    recognition.start();
-  }
-}
+    if (!SpeechRecognition) {
+      status.textContent = "Speech recognition is unsupported.";
+    } else {
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onresult = async (event) => {
+        let transcript = event.results[event.results.length - 1][0].transcript
+          .toLowerCase()
+          .trim();
+
+        console.log("heard: " + transcript);
+
+        if (state.listening) {
+          await command.execute(transcript);
+          state.listening = false;
+        } else {
+          Object.entries(state.listen).forEach(([word, callback]) => {
+            if (transcript.includes(word)) {
+              callback();
+            }
+          });
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.log("Error: " + event.error);
+      };
+
+      recognition.onend = () => {
+        console.log("Stopped.");
+        voice_recognition.listen_to_all();
+      };
+
+      recognition.start();
+    }
+  },
+};

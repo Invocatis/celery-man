@@ -10,4 +10,9 @@ let util = {
     }
     return array;
   },
+  hash: function (str) {
+    let h = 0;
+    for (const c of str) h = (Math.imul(31, h) + c.charCodeAt(0)) | 0;
+    return h;
+  },
 };

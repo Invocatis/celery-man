@@ -4,6 +4,10 @@ let music = {
       if (state.music.path == file) {
         // Do nothing
       } else {
+        if (state.music.player) {
+          sounds.fadeOut(state.music.player);
+        }
+
         music.stop();
         let audio = new Audio(file);
         audio.loop = true;
@@ -19,6 +23,11 @@ let music = {
       state.music.player.pause();
       state.music.player = null;
       state.music.path = null;
+    }
+  },
+  fadeOut() {
+    if (state.music.player != null) {
+      sounds.fadeOut(state.music.player);
     }
   },
 };

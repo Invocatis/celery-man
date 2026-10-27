@@ -1,4 +1,42 @@
 let sounds = {
+  warning: function (path) {
+    new Audio("audio/computer/warning.mp3").play();
+  },
+  play: function (path) {
+    if (state.audio) {
+      sounds.fadeOut(state.audio);
+    }
+    let audio = new Audio(path);
+    state.audio = audio;
+    return new Promise((resolve, reject) => {
+      audio.addEventListener("ended", resolve, { once: true });
+      audio.addEventListener("error", reject, { once: true });
+      audio.play().catch(reject);
+    });
+  },
+
+  fadeOut: function (audio, duration = 250) {
+    let tick = 200;
+    let num_steps = duration / tick;
+    let step = audio.volume / num_steps;
+    let id = setInterval(() => {
+      if (audio.volume <= step || audio.volume <= 0) {
+        audio.pause();
+        clearInterval(id);
+      } else {
+        audio.volume -= step;
+      }
+    }, tick);
+  },
+
+  boot: function () {
+    new Audio("audio/computer/boot.mp3").play();
+  },
+
+  prompt: function () {
+    new Audio("audio/computer/prompt.mp3").play();
+  },
+
   beep: function (frequency = 987, duration = 350, gain = 1.5) {
     const ctx = new AudioContext();
 

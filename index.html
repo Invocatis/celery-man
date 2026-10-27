@@ -25,7 +25,7 @@
     </head>
     <body>
         <div id="desktop">
-            <div class="window" id="window-welcome">
+            <div class="window hidden" id="window-welcome">
                 <div class="window-titlebar">
                     <button type="button" class="btn-close" title="Close">
                         <i class="fa fa-2x fa-minus"></i>
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <div style="display: none" class="window" id="window-prompt">
+            <div class="window hidden" id="window-prompt">
                 <div class="window-titlebar">
                     <button type="button" class="btn-close" title="Close">
                         <i class="fa fa-2x fa-minus"></i>
@@ -70,7 +70,7 @@
                 <div id="command-input" class="window-content"></div>
             </div>
 
-            <div style="display: none" class="window" id="window-loader">
+            <div class="window hidden" id="window-loader">
                 <div class="window-titlebar">
                     <button type="button" class="btn-close" title="Close">
                         <i class="fa fa-2x fa-minus"></i>
@@ -91,8 +91,8 @@
                     <h3>Loading, please wait...</h3>
                 </div>
             </div>
-            <div id="warning" style="display: none">
-                <h1>WARNING</h1>
+            <div id="warning" class="hidden">
+                <h1 id="warning-text">WARNING</h1>
 
                 <div class="window">
                     <div class="window-titlebar">
@@ -111,7 +111,6 @@
                     </div>
 
                     <div class="window-content">
-                        <progress max="100" value="0"></progress>
                         <h2>NSFW</h2>
                     </div>
                 </div>

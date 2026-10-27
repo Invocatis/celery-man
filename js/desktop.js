@@ -18,31 +18,77 @@ let desktop = {
   },
 
   say: function (text) {
-    desktop.changeTextPrompt(text);
-    voice.speak(text);
+    return Promise.all([desktop.changeTextPrompt(text), voice.speak(text)]);
   },
 
-  addWindows: async function (title, windows) {
+  cycleWindows: async function (sequence, timing = 5000) {
+    let id = setInterval(() => {
+      if (state.sequence != sequence) clearInterval(id);
+
+      let windows = Array.from(
+        document.querySelectorAll(".window." + sequence.title),
+      );
+      if (windows.length != 0) {
+        let sources = windows.map((w) => w.id);
+
+        let removal = util.selectRandom(windows);
+        if (removal) desktop.hide(removal);
+        setTimeout(() => removal.remove(), 500);
+
+        let next = sequence.windows.filter(
+          (w) => !sources.some((s) => s === util.hash(w.media) + ""),
+        );
+
+        desktop.addWindows(sequence.title, [util.selectRandom(next)]);
+      }
+    }, timing);
+  },
+
+  addWindows: async function (title, windows, spaceOut = true) {
     console.log("Add sequence: " + title);
 
-    desktop.hide("#window-original");
     desktop.hide("#window-welcome");
+
+    var tick = null;
+    if (spaceOut) {
+      tick = 500 * Math.random() + 300;
+    } else {
+      tick = 0;
+    }
 
     await util.shuffle(windows).reduce((promise, source) => {
       const win = desktop.buildVideo(title, source);
       return promise.then(
         () =>
           new Promise((resolve) =>
-            setTimeout(
-              () => {
-                desktop.placeVideoWindow(win, source);
-                resolve();
-              },
-              500 * Math.random() + 300,
-            ),
+            setTimeout(() => {
+              desktop.placeVideoWindow(win, source);
+              resolve();
+            }, tick),
           ),
       );
     }, Promise.resolve());
+  },
+
+  warning: function () {
+    state.warning = true;
+
+    desktop.show("#warning");
+    sounds.warning();
+
+    let id = setInterval(() => {
+      let warning_text = document.querySelector("#warning-text");
+      if (state.warning === false) {
+        desktop.hide("#warning");
+        clearInterval(id);
+      }
+      if (warning_text.style.display === "none") {
+        desktop.show("#warning-text");
+        sounds.warning();
+      } else {
+        desktop.hide("#warning-text");
+      }
+    }, 500);
   },
 
   buildVideo: function (title, source) {
@@ -77,17 +123,17 @@ let desktop = {
     }
 
     var win = document.createElement("div");
-    win.id = source.id;
-    win.className = "window window-video";
+    win.id = util.hash(source.media);
+    win.className = "window window-video " + title;
     win.innerHTML = titlebar;
     win.insertAdjacentElement("beforeend", subelement);
 
     return win;
   },
 
-  loadingWindow: async function (selector, hide = true) {
+  loadingWindow: async function (selector, hide = true, sound = true) {
     desktop.show(selector);
-    sounds.playLoading();
+    if (sound) sounds.playLoading();
     for (
       var progress = 0;
       progress < 100;
@@ -111,7 +157,12 @@ let desktop = {
   },
 
   loadWelcome: async function () {
-    await desktop.loadingWindow("#window-welcome", (hide = false));
+    sounds.boot();
+    await desktop.loadingWindow(
+      "#window-welcome",
+      (hide = false),
+      (sound = false),
+    );
   },
 
   lock: function () {
@@ -122,7 +173,7 @@ let desktop = {
     state.lock = false;
   },
 
-  sendCommand() {
+  sendCommand: async function () {
     let command_input = document.querySelector("#command-input");
 
     state.inputing = false;
@@ -136,7 +187,7 @@ let desktop = {
     }
 
     command_input.blur();
-    command.execute(command_string);
+    await command.execute(command_string);
   },
 
   boot: async function () {
@@ -183,8 +234,8 @@ let desktop = {
         } else if (state.inputing && event.key == "Backspace") {
           command_input.innerHTML = command_input.innerHTML.slice(0, -1);
         } else if (!state.inputing && event.key == " ") {
-          sounds.beep();
-          listen();
+          sounds.prompt();
+          voice_recognition.listen();
         } else if (event.key.length === 1) {
           if (!state.inputing) {
             command_input.innerHTML = "";
@@ -196,23 +247,85 @@ let desktop = {
       });
     });
 
+    state.sequence = sequences.base;
+
     await application.renderSequence(sequences.base);
 
-    listen_to_all();
-    listen();
+    let trigger_word = () => {
+      console.log("trigger word heard");
+      desktop.say("Yes?");
+      voice_recognition.listen();
+    };
+
+    voice_recognition.listen_for(
+      ["computer"],
+      () => trigger_word(),
+      (persist = true),
+    );
+
+    voice_recognition.listen_to_all();
+    voice_recognition.listen();
+  },
+
+  remove: function (selector) {
+    var element;
+    if (typeof selector === "string") {
+      element = document.querySelector(selector);
+    } else {
+      element = selector;
+    }
+
+    desktop.hide(selector);
+
+    selector.addEventListener(
+      "animationend",
+      () => {
+        element.remove();
+      },
+      { once: true },
+    );
   },
 
   hide: function (selector) {
-    console.log("hiding ... " + selector);
-    document
-      .querySelectorAll(selector)
-      .forEach((elem) => (elem.style.display = "none"));
+    var element;
+    if (typeof selector === "string") {
+      element = document.querySelector(selector);
+    } else {
+      element = selector;
+    }
+
+    // selector.style.animation = null;
+    element.classList.add("hiding");
+    // selector.style.animation = animation;
+
+    element.addEventListener(
+      "animationend",
+      () => {
+        element.classList.remove("hiding");
+        element.classList.add("hidden");
+      },
+      { once: true },
+    );
   },
 
   show: function (selector) {
-    document
-      .querySelectorAll(selector)
-      .forEach((elem) => (elem.style.display = "block"));
+    var element;
+    if (typeof selector === "string") {
+      element = document.querySelector(selector);
+    } else {
+      element = selector;
+    }
+
+    element.classList.remove("hidden");
+    element.classList.add("showing");
+
+    element.addEventListener(
+      "animationend",
+      () => {
+        element.classList.remove("showing");
+      },
+      { once: true },
+    );
   },
 
   placeVideoWindow: (() => {
@@ -220,11 +333,11 @@ let desktop = {
     var y = Math.floor(100 * Math.random());
 
     return function (win, source) {
-      let desktop = document.getElementById("desktop");
+      let desktop_element = document.getElementById("desktop");
 
       requestAnimationFrame(() => {
-        win.style.display = "none";
-        desktop.insertAdjacentElement("beforeend", win);
+        win.classList.add("hidden");
+        desktop_element.insertAdjacentElement("beforeend", win);
 
         requestAnimationFrame(() => {
           var cx, cy;
@@ -245,7 +358,7 @@ let desktop = {
           requestAnimationFrame(() => {
             win.style.left = cx;
             win.style.top = cy;
-            win.style.display = "block";
+            desktop.show(win);
           });
         });
       });

@@ -2,7 +2,6 @@
   "title": "Celery Man",
   "loading": true,
   "prompt": "Yes, Paul.",
-  "audio": "audio/voice/yes_paul.mp3",
   "beep": true,
   "clear": true,
   "music": "audio/music/celery.mp3",

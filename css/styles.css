@@ -5,8 +5,17 @@ html {
     padding: 0;
 }
 
+.showing {
+    animation: window-expand 0.2s steps(8, start) forwards;
+}
+
+.hiding {
+    animation: window-expand 0.2s steps(8, start) forwards;
+    animation-direction: reverse;
+}
+
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /******************************************************* desktop */
@@ -76,7 +85,9 @@ html {
     padding: 0;
     position: absolute;
     text-align: center;
-    animation: window-expand 0.2s steps(8, start) forwards;
+}
+
+.window.hiding {
 }
 
 .window-content {
@@ -181,11 +192,9 @@ html {
 /******************************************************* welcome */
 
 #window-welcome {
-    display: block;
     left: calc(50% - 250px);
     width: 500px;
     top: 30%;
-    display: none;
 }
 
 #window-welcome .header {
@@ -300,6 +309,8 @@ html {
     width: 100vw;
     height: 100vh;
     text-align: center;
+    z-index: 1000;
+    position: absolute;
 }
 
 #warning h1 {
@@ -308,4 +319,20 @@ html {
     font-size: 100pt;
     color: red;
     -webkit-text-stroke: 3px black;
+    display: absolute;
+    top: 50%;
+    left: calc(50% - 100px);
+}
+
+#warning .window {
+    display: absolute;
+    top: 60%;
+    left: 40%;
+    height: 300px;
+    width: 600px;
+}
+
+#warning h2 {
+    font-size: 80pt;
+    margin-top: 10%;
 }

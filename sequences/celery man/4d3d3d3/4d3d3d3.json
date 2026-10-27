@@ -1,7 +1,6 @@
 {
   "title": "Celery Man",
   "prompt": "4d3d3d3 Engaged.",
-  "audio": "audio/voice/4d3d3d3.mp3",
   "loading": false,
   "autoType": "add sequence: OYSTER",
   "clearTextPrompt": false,
