@@ -4,7 +4,6 @@ let command = {
   retorts: [
     "no u",
     "your mom",
-    "eat my ass",
     "proud of you",
     "c'mon",
     "don't be like that",
@@ -66,6 +65,7 @@ let command = {
         return;
       }
 
+      state.sequence = matching[0];
       await application.renderSequence(matching[0]);
     },
   },
