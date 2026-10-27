@@ -18,9 +18,14 @@
             type = "app";
             program = "${pkgs.writeShellApplication {
               name = "serve";
-              runtimeInputs = with pkgs; [ nginx mkcert ];
+              runtimeInputs = with pkgs; [ nginx mkcert bun ];
               text = ''
-                exec "$PWD/server.sh"
+                trap cleanup EXIT INT TERM
+                "$PWD/server.sh" &
+                bun run "$PWD/print-server/server.js" &
+
+                wait
+
               '';
             }}/bin/serve";
           };

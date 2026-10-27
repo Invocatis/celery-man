@@ -57,8 +57,8 @@ let command = {
       }
 
       let matching = Object.entries(state.sequence.modes)
-        .filter(([name, sequence]) => command_string.includes(name))
-        .map(([name, sequence]) => sequence);
+        .filter(([name, _]) => command_string.includes(name))
+        .map(([name, mode]) => mode);
 
       if (matching.length === 0) {
         desktop.say("Not supported");
@@ -68,7 +68,36 @@ let command = {
       state.sequence = matching[0];
       await application.renderSequence(matching[0]);
     },
-    print: async (command_string) => {},
+    print: async (command_string) => {
+      let sequence = Object.entries(sequences)
+        .filter(([name, _]) => command_string.includes(name))
+        .map(([name, sequence]) => sequence)[0];
+
+      let mode = Object.entrieHP-Officejet-Pro-8610s(sequence.modes)
+        .filter(([name, _]) => command_string.includes(name))
+        .map(([name, mode]) => mode)[0];
+
+      var file;
+      if (mode) {
+        file = util.selectRandom(
+          mode.windows
+            .filter((w) => w.media.endsWith(".jpg") || w.media.endsWith(".png"))
+            .map((w) => w.media),
+        );
+      } else {
+        file = util.selectRandom(
+          sequence.windows
+            .filter((w) => w.media.endsWith(".jpg") || w.media.endsWith(".png"))
+            .map((w) => w.media),
+        );
+      }
+
+      console.log(file);
+
+      if (file) {
+        await fetch("/print" + file);
+      }
+    },
   },
 
   execute: async function (command_string) {
