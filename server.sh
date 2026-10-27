@@ -10,7 +10,8 @@ if [[ ! -f "state/certs/localhost.pem" ]]; then
         localhost 127.0.0.1 ::1
 fi
 
-docker run --rm -p 8080:8080 \
+docker run --rm -p 443:443 \
 	-v .:/app/:ro \
 	-v ./nginx.conf:/etc/nginx/nginx.conf:ro \
+	-v ./.https/certs:/etc/nginx/certs \
 	nginx

@@ -9,12 +9,12 @@
     {
       "id": "celery3",
       "media": "celery3.mp4",
-      "position": { "top": "10%", "left": "45%" }
+      "position": { "top": "10%", "left": "55%" }
     },
     {
       "id": "celery4",
       "media": "celery4.mp4",
-      "position": { "top": "10%", "left": "10%" }
+      "position": { "top": "15%", "left": "10%" }
     }
   ]
 }

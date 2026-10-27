@@ -68,6 +68,7 @@ let command = {
       state.sequence = matching[0];
       await application.renderSequence(matching[0]);
     },
+    print: async (command_string) => {},
   },
 
   execute: async function (command_string) {

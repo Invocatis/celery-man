@@ -258,13 +258,18 @@ let desktop = {
     };
 
     voice_recognition.listen_for(
-      ["computer"],
+      [/^computer$/],
       () => trigger_word(),
       (persist = true),
     );
 
+    voice_recognition.listen_for(
+      [/^computer/],
+      (result) => command.execute(result),
+      (persist = true),
+    );
+
     voice_recognition.listen_to_all();
-    voice_recognition.listen();
   },
 
   remove: function (selector) {
@@ -316,6 +321,10 @@ let desktop = {
       element = selector;
     }
 
+    if (!element.classList.contains("hidden")) {
+      return;
+    }
+
     element.classList.remove("hidden");
     element.classList.add("showing");
 
@@ -343,7 +352,7 @@ let desktop = {
           var cx, cy;
           if (source.position) {
             cx = source.position.left;
-            cy = source.position.left;
+            cy = source.position.top;
           } else {
             x += 71;
             x %= 100;

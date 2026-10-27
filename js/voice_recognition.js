@@ -31,20 +31,22 @@ let voice_recognition = {
     state.listening = false;
 
     triggers.forEach((text) => {
-      state.listen[text] = () => {
-        triggers.forEach((text) => {
-          if (!persist) {
-            delete state.listen[text];
+      state.listen.push([
+        text,
+        (result) => {
+          triggers.forEach((text) => {
+            if (!persist) {
+              delete state.listen[text];
+              state.listen = state.listen.filter(([t, c]) => t === text);
+            }
+          });
+
+          if (callback) {
+            callback(result);
           }
-        });
-
-        console.log(callback);
-
-        if (callback) {
-          callback();
-        }
-        resolve();
-      };
+          resolve();
+        },
+      ]);
     });
 
     return promise;
@@ -76,9 +78,11 @@ let voice_recognition = {
           await command.execute(transcript);
           state.listening = false;
         } else {
-          Object.entries(state.listen).forEach(([word, callback]) => {
-            if (transcript.includes(word)) {
+          state.listen.forEach(([trigger, callback]) => {
+            if (typeof trigger === "string" && trigger === transcript) {
               callback();
+            } else if (trigger.test(transcript)) {
+              callback(transcript);
             }
           });
         }

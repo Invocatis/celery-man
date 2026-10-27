@@ -7,7 +7,7 @@ var state = {
   inputing: false,
   booted: false,
   listening: false,
-  listen: {},
+  listen: [],
 };
 
 var application = {
@@ -129,6 +129,15 @@ var application = {
         desktop.boot();
       }
     });
+
+    document.querySelector("#desktop").addEventListener(
+      "touchstart",
+      (event) => {
+        desktop.boot();
+      },
+      { once: true },
+    );
+
     sequence.loadExternalSequences();
   },
 };
