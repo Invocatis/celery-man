@@ -10,6 +10,8 @@ services:
       - ./.https/certs:/etc/nginx/certs
     depends_on:
       - print-server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - app
   print-server:
@@ -19,7 +21,7 @@ services:
       - ./print-server:/app
       - ./sequences:/app/sequences
       - /etc/cups/:/etc/cups/
-    environment: 
+    environment:
       CUPS_SERVER: "nginx:631"
     extra_hosts:
       - "host.docker.internal:host-gateway"

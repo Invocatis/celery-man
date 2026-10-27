@@ -8,7 +8,7 @@ Bun.serve({
 
     const asdf = Bun.spawn(["lpstat", "-a"], {stdout: "inherit"});
 
-    const proc = Bun.spawn(["lp", "-d", "Farm_House_Xerox", "." + file]);
+    const proc = Bun.spawn(["lp", "-d", "Xerox-Phaser-6022", "." + file]);
 
     // const proc = Bun.spawn(["ls", "." + file]);
 

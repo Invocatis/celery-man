@@ -114,12 +114,6 @@ var application = {
   },
 
   initialize: async function () {
-    const command_input = document.querySelector("#command-input");
-    command_input.addEventListener(
-      "input",
-      () => (command_input.scrollLeft = command_input.scrollWidth),
-    );
-
     document.addEventListener("keydown", (event) => {
       if (
         !state.booted &&
@@ -134,6 +128,12 @@ var application = {
       "touchstart",
       (event) => {
         desktop.boot();
+        document
+          .querySelector("#window-prompt")
+          .addEventListener("touchstart", () => {
+            sounds.prompt();
+            voice_recognition.listen();
+          });
       },
       { once: true },
     );

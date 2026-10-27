@@ -81,20 +81,23 @@ let voice_recognition = {
           state.listen.forEach(([trigger, callback]) => {
             if (typeof trigger === "string" && trigger === transcript) {
               callback();
-            } else if (trigger.test(transcript)) {
+            } else if (trigger instanceof RegExp && trigger.test(transcript)) {
               callback(transcript);
             }
           });
         }
       };
 
+      var error;
+
       recognition.onerror = (event) => {
+        error = event.error;
         console.log("Error: " + event.error);
       };
 
       recognition.onend = () => {
         console.log("Stopped.");
-        voice_recognition.listen_to_all();
+        if (!error) voice_recognition.listen_to_all();
       };
 
       recognition.start();

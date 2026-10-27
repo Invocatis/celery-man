@@ -123,10 +123,16 @@ let sequence = {
 
   loadExternalSequences: async function () {
     console.log("Loading external sequnces");
-    let folders = await fetch("/sequences/").then((r) => r.json());
+    let response = await fetch("/sequences/");
 
-    for (let folder of folders) {
-      sequences[folder.name] = await sequence.loadSequence([folder.name]);
+    if (response.status === 404) {
+      state.sequences = default_sequences;
+    } else {
+      let folders = await response.json();
+
+      for (let folder of folders) {
+        sequences[folder.name] = await sequence.loadSequence([folder.name]);
+      }
     }
   },
 };
