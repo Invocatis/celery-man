@@ -31,7 +31,7 @@ let desktop = {
       if (windows.length != 0) {
         let sources = windows.map((w) => w.id);
 
-        let removal = util.selectRandom(windows);
+        let removal = windows[0];
         if (removal) desktop.hide(removal);
         setTimeout(() => removal.remove(), 500);
 
@@ -82,11 +82,11 @@ let desktop = {
         desktop.hide("#warning");
         clearInterval(id);
       }
-      if (warning_text.style.display === "none") {
-        desktop.show("#warning-text");
+      if (warning_text.classList.contains("hidden")) {
+        desktop.show("#warning-text", (animation = false));
         sounds.warning();
       } else {
-        desktop.hide("#warning-text");
+        desktop.hide("#warning-text", (animation = false));
       }
     }, 500);
   },
@@ -108,15 +108,19 @@ let desktop = {
     if (source.media.endsWith(".jpg") || source.media.endsWith(".png")) {
       var image = document.createElement("img");
       image.src = source.media;
+      image.classList = "media";
 
       subelement = image;
     } else if (source.media.endsWith(".mp4")) {
       var video = document.createElement("video");
+      video.classList = "media";
+
+      let once = source.once == null ? false : source.once;
 
       video.src = source.media;
       video.autoplay = true;
-      video.loop = true;
-      video.muted = true;
+      video.loop = !once;
+      video.muted = source.audio == null ? true : !source.audio;
       video.preload = "auto";
 
       subelement = video;
@@ -127,6 +131,18 @@ let desktop = {
     win.className = "window window-video " + title;
     win.innerHTML = titlebar;
     win.insertAdjacentElement("beforeend", subelement);
+
+    let once = source.once == null ? false : source.once;
+    if (once) {
+      subelement.loop = false;
+      subelement.addEventListener(
+        "ended",
+        () => {
+          desktop.hide(win);
+        },
+        { once: true },
+      );
+    }
 
     return win;
   },
@@ -291,7 +307,7 @@ let desktop = {
     );
   },
 
-  hide: function (selector) {
+  hide: function (selector, animation = true) {
     var element;
     if (typeof selector === "string") {
       element = document.querySelector(selector);
@@ -299,21 +315,25 @@ let desktop = {
       element = selector;
     }
 
-    // selector.style.animation = null;
-    element.classList.add("hiding");
-    // selector.style.animation = animation;
+    if (animation) {
+      element.classList.add("hiding");
+    } else {
+      element.classList.add("hidden");
+    }
 
-    element.addEventListener(
-      "animationend",
-      () => {
-        element.classList.remove("hiding");
-        element.classList.add("hidden");
-      },
-      { once: true },
-    );
+    if (animation) {
+      element.addEventListener(
+        "animationend",
+        () => {
+          element.classList.remove("hiding");
+          element.classList.add("hidden");
+        },
+        { once: true },
+      );
+    }
   },
 
-  show: function (selector) {
+  show: function (selector, animation = true) {
     var element;
     if (typeof selector === "string") {
       element = document.querySelector(selector);
@@ -326,20 +346,71 @@ let desktop = {
     }
 
     element.classList.remove("hidden");
-    element.classList.add("showing");
+    if (animation) element.classList.add("showing");
 
-    element.addEventListener(
-      "animationend",
-      () => {
-        element.classList.remove("showing");
-      },
-      { once: true },
-    );
+    if (animation) {
+      element.addEventListener(
+        "animationend",
+        () => {
+          element.classList.remove("showing");
+        },
+        { once: true },
+      );
+    }
+  },
+
+  moveWindow: function (window, x, y, step = 3, trail = 5, tick = 250) {
+    let left = parseInt(window.style.left);
+    let top = parseInt(window.style.top);
+
+    let trail_windows = [];
+
+    let direction = left < x ? "right" : "left";
+
+    let desktop = document.querySelector("#desktop");
+
+    let id = setInterval(() => {
+      top += step;
+      left += step;
+
+      let w = window.cloneNode(true);
+
+      let srcObject = window.querySelector(".media").captureStream();
+      let media = w.querySelector(".media");
+
+      if (media.matches("video")) {
+        media.removeAttribute("src");
+        media.srcObject = srcObject;
+      }
+
+      window.style.left = left + "%";
+      window.style.top = top + "%";
+
+      trail_windows.push(w);
+
+      window.before(w);
+
+      if (trail_windows.length > trail) {
+        let win = trail_windows.shift();
+        win.remove();
+      }
+
+      if (direction === "right" && left >= x) {
+        clearInterval(id);
+      }
+    }, tick);
   },
 
   placeVideoWindow: (() => {
-    var x = Math.floor(100 * Math.random());
-    var y = Math.floor(100 * Math.random());
+    const mod = 64;
+    const inc = 23;
+    const rows = 4;
+    const columns = 16;
+
+    let i = Math.floor(mod * Math.random());
+
+    const x_mul = 100 / (columns + 3);
+    const y_mul = 100 / (rows + 3);
 
     return function (win, source) {
       let desktop_element = document.getElementById("desktop");
@@ -349,24 +420,34 @@ let desktop = {
         desktop_element.insertAdjacentElement("beforeend", win);
 
         requestAnimationFrame(() => {
-          var cx, cy;
+          var x, y;
           if (source.position) {
-            cx = source.position.left;
-            cy = source.position.top;
+            x = source.position.left;
+            y = source.position.top;
           } else {
-            x += 71;
-            x %= 100;
+            let x_jitter = 5 * Math.random();
+            let y_jitter = 10 * Math.random();
 
-            y += 71;
-            y %= 100;
+            x_jitter -= x_jitter / 2;
+            y_jitter -= y_jitter / 2;
 
-            cx = (x % 80) + "%";
-            cy = (y % 50) + "%";
+            x = x_mul * (i % columns);
+
+            y = y_mul * Math.trunc(i % rows) + y_jitter;
+
+            x += x_jitter;
+            y += y_jitter;
+
+            i += inc;
+            i %= mod;
+
+            x += "%";
+            y += "%";
           }
 
           requestAnimationFrame(() => {
-            win.style.left = cx;
-            win.style.top = cy;
+            win.style.left = x;
+            win.style.top = y;
             desktop.show(win);
           });
         });

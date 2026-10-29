@@ -3,7 +3,7 @@
     "music": null,
     "clear": true,
     "prompt": "I have a BETA sequence I have been working on.",
-    "wait": 2500
+    "wait": 350
   },
   {
     "prompt": "Would you like to see it?",
@@ -11,8 +11,20 @@
   },
   {
     "loading": true,
+    "prompt": "Okay.",
+    "windows": [
+      {
+        "media": "sequences/tayne/imtayne.mp4",
+        "audio": true,
+        "once": true
+      }
+    ],
+    "wait": 6500
+  },
+  {
     "prompt": "",
     "title": "Tayne",
+    "clear": true,
     "windows": [
       {
         "id": "tayne1",

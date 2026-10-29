@@ -97,7 +97,7 @@ let voice_recognition = {
 
       recognition.onend = () => {
         console.log("Stopped.");
-        if (!error) voice_recognition.listen_to_all();
+        if (!error || error === "no-speach") voice_recognition.listen_to_all();
       };
 
       recognition.start();

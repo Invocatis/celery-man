@@ -13,9 +13,9 @@ let command = {
   aliases: [
     [/.?ick (up|out)/, "engage"],
     [/new sequence/, "load sequence tayne"],
-    [/nude/, "engage nsfw"],
+    [/^(?!.*load.*nude)^(?!.*add sequence.*nude)nude/, "engage nsfw"],
     [/generate/, "engage"],
-    [/(4|d|3|\s+){3,}/, "4d3d3d3"],
+    [/(4|d|3|\s+){4,}/, "4d3d3d3"],
     [/boot/, "load"],
   ],
 
@@ -25,6 +25,11 @@ let command = {
     [/sequins/, "sequence"],
     [/cabin/, "gavin"],
     [/little/, "load up"],
+    [/tain|ten|10|chain/, "tayne"],
+    [/connor/, "conor"],
+    [/and net|in net/, "annette"],
+    [/devin|devon/, "devan"],
+    [/doctor/, "dr"],
   ],
 
   executors: {
@@ -38,14 +43,25 @@ let command = {
     },
     "add sequence": async (command_string) => {
       console.log("Add sequence: " + command_string);
-      let matching = Object.entries(sequences)
-        .filter(([name, sequence]) => command_string.includes(name))
+
+      let sequence = Object.entries(sequences)
+        .filter(([name, _]) => command_string.includes(name))
+        .sort((a, b) => b[0].length - a[0].length)
         .map(([name, sequence]) => sequence);
 
-      if (matching.length > 0) {
-        // TODO add multiple
-        state.sequence = matching[0];
-        await application.renderSequence(matching[0]);
+      if (sequence.length > 0) {
+        sequence = sequence[0];
+        let mode = !Array.isArray(sequence)
+          ? Object.entries(sequence.modes)
+              .filter(([name, _]) => command_string.includes(name))
+              .map(([name, mode]) => mode)
+          : undefined;
+        if (mode && mode.length > 0) {
+          state.sequence = mode[0];
+        } else {
+          state.sequence = sequence;
+        }
+        await application.renderSequence(state.sequence);
       } else {
         await application.renderSequence(sequences["sequence_not_found"]);
       }

@@ -42,7 +42,7 @@ var application = {
 
     if (sequence.warning && !state.warning) {
       desktop.warning();
-    } else {
+    } else if (!sequence.warning) {
       state.warning = false;
     }
 
@@ -110,6 +110,7 @@ var application = {
     if (sequence.waitForAffirmation) {
       await voice_recognition.listen_for_affirmation();
     }
+
     desktop.unlock();
   },
 
