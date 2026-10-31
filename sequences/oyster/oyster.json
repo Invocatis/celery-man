@@ -1,25 +1,27 @@
 {
   "title": "Oyster",
-  "prompt": null,
-  "audio": "audio/voice/add_sequence_oyster.mp3",
+  "prompt": "add sequence: OYSTER",
   "music": "audio/music/oyster.mp3",
   "loading": false,
   "wait": 500,
+  "ordered": true,
   "windows": [
     {
+      "time": 500,
       "id": "oyster1",
       "media": "oyster1.mp4",
-      "position": { "top": "10%", "left": "25%" }
+      "swap": "celery1",
+      "addIfNoSwap": true
     },
     {
+      "time": 2200,
       "id": "oyster2",
-      "media": "oyster2.mp4",
-      "position": { "top": "25%", "left": "5%" }
+      "media": "oyster2.mp4"
     },
     {
+      "time": 2500,
       "id": "oyster3",
-      "media": "oyster3.mp4",
-      "position": { "top": "40%", "left": "45%" }
+      "media": "oyster3.mp4"
     }
   ]
 }

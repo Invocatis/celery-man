@@ -1,7 +1,12 @@
 let desktop = {
   changeTextPrompt: async function (text) {
+    let prompt = document.querySelector("#window-prompt .window-content");
     if (text == "") {
-      document.querySelector("#window-prompt .window-content").innerHTML = "";
+      prompt.innerHTML = "";
+      return;
+    }
+
+    if (text === prompt.innerHTML) {
       return;
     }
 
@@ -9,8 +14,7 @@ let desktop = {
     var textPromptContent = "";
     for (const char of text) {
       textPromptContent += char;
-      document.querySelector("#window-prompt .window-content").innerHTML =
-        textPromptContent;
+      prompt.innerHTML = textPromptContent;
       await new Promise((r) => setTimeout(r, 50));
     }
 
@@ -29,25 +33,37 @@ let desktop = {
         document.querySelectorAll(".window." + sequence.title),
       );
       if (windows.length != 0) {
-        let sources = windows.map((w) => w.id);
+        let sources = windows.map((w) => w.querySelector("[src]").src);
 
         let removal = windows[0];
         if (removal) desktop.hide(removal);
         setTimeout(() => removal.remove(), 500);
 
         let next = sequence.windows.filter(
-          (w) => !sources.some((s) => s === util.hash(w.media) + ""),
+          (w) => !sources.some((s) => s.includes(w.media)),
         );
 
-        desktop.addWindows(sequence.title, [util.selectRandom(next)]);
+        desktop.addWindows(sequence, [util.selectRandom(next)]);
       }
     }, timing);
   },
 
-  addWindows: async function (title, windows, spaceOut = true) {
-    console.log("Add sequence: " + title);
+  addWindows: function (sequence, windows, spaceOut = true) {
+    let title = sequence.title;
 
-    desktop.hide("#window-welcome");
+    let add_to;
+
+    if (sequence.container) {
+      let div = document.createElement("div");
+      div.id = sequence.id + "-container";
+      div.className = "extra-container";
+
+      document.getElementById("desktop").appendChild(div);
+
+      add_to = div;
+    } else {
+      add_to = document.getElementById("desktop");
+    }
 
     var tick = null;
     if (spaceOut) {
@@ -56,18 +72,101 @@ let desktop = {
       tick = 0;
     }
 
-    await util.shuffle(windows).reduce((promise, source) => {
-      const win = desktop.buildVideo(title, source);
-      return promise.then(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => {
-              desktop.placeVideoWindow(win, source);
-              resolve();
-            }, tick),
-          ),
+    let promises = [];
+    let window_elements = [];
+
+    let time = tick;
+
+    for (let source of windows) {
+      const win = desktop.buildVideo(sequence, source);
+      window_elements.push(win);
+    }
+
+    function add(win, source, t) {
+      let p = new Promise((resolve) =>
+        setTimeout(() => {
+          desktop.placeVideoWindow(
+            add_to,
+            win,
+            source,
+            (hidden = false),
+            (arranged = sequence.arranged),
+          );
+          resolve();
+        }, t),
       );
-    }, Promise.resolve());
+      promises.push(p);
+    }
+
+    for (let i = 0; i < windows.length; i++) {
+      let win = window_elements[i];
+      let source = windows[i];
+
+      let t = source.time === undefined ? (time += tick) : source.time;
+
+      if (source.swap) {
+        let p = new Promise((resolve) =>
+          setTimeout(() => {
+            if (state.sequence != sequence) return;
+            let id = source.swap;
+            let swap_to = document.querySelector("#" + id + " .media");
+
+            if (!swap_to && source.addIfNoSwap) {
+              add(win, source, t);
+              return;
+            }
+            let { width, height } = swap_to.getBoundingClientRect();
+
+            swap_to.style.width = width + "px";
+            swap_to.style.height = height + "px";
+
+            let to_flash = document.getElementById(id);
+            desktop.flash(to_flash, () => {
+              swap_to.src = source.media;
+            });
+            resolve();
+          }, t),
+        );
+
+        promises.push(p);
+      } else if (sequence.sync) {
+        desktop.placeVideoWindow(
+          add_to,
+          win,
+          source,
+          (hidden = true),
+          (arranged = sequence.arranged),
+        );
+        let p = new Promise((resolve) =>
+          setTimeout(() => {
+            desktop.show(win);
+            resolve();
+          }, t),
+        );
+        promises.push(p);
+      } else {
+        add(win, source, t);
+      }
+    }
+
+    return [window_elements, Promise.all(promises)];
+  },
+
+  flash: function (win, inbetween = () => {}) {
+    const r = win.getBoundingClientRect();
+    const flash = document.createElement("div");
+    flash.className = "flash up";
+    win.appendChild(flash);
+    console.log(flash);
+    console.log(win);
+    flash.addEventListener("animationend", (e) => {
+      if (e.animationName === "flash-up") {
+        inbetween();
+        flash.className = "flash down";
+      } else if (e.animationName === "flash-up") {
+        flash.remove();
+      }
+    });
   },
 
   warning: function () {
@@ -91,15 +190,19 @@ let desktop = {
     }, 500);
   },
 
-  buildVideo: function (title, source) {
+  buildVideo: function (sequence, source) {
+    let title = sequence.title;
     var titlebar = `
-            <div class="window-titlebar">
-                <button type="button" class="btn-close" title="Close"><i class="fa fa-2x fa-minus"></i></button>
+            <div>
 
-                <span class="title">${title}</span>
-
-                <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-up"></i></button>
-                <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-down"></i></button>
+              <div class="window-titlebar">
+                  <button type="button" class="btn-close" title="Close"><i class="fa fa-2x fa-minus"></i></button>
+                  <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-up"></i></button>
+                  <button type="button" class="btn-move" title="Move"><i class="fa fa-2x fa-caret-down"></i></button>
+              </div>
+              <div class="window-titlebar">
+                  <span class="title">${title}</span>
+              </div>
             </div>
         `;
 
@@ -111,7 +214,10 @@ let desktop = {
       image.classList = "media";
 
       subelement = image;
-    } else if (source.media.endsWith(".mp4")) {
+    } else if (
+      source.media.endsWith(".mp4") ||
+      source.media.endsWith(".webm")
+    ) {
       var video = document.createElement("video");
       video.classList = "media";
 
@@ -126,24 +232,39 @@ let desktop = {
       subelement = video;
     }
 
-    var win = document.createElement("div");
-    win.id = util.hash(source.media);
-    win.className = "window window-video " + title;
-    win.innerHTML = titlebar;
-    win.insertAdjacentElement("beforeend", subelement);
-
-    let once = source.once == null ? false : source.once;
-    if (once) {
-      subelement.loop = false;
-      subelement.addEventListener(
-        "ended",
-        () => {
-          desktop.hide(win);
-        },
-        { once: true },
-      );
+    if (source.size) {
+      if (source.size.height) subelement.height = source.size.height;
+      if (source.size.width) subelement.width = source.size.width;
     }
 
+    var win = document.createElement("div");
+
+    var file_name = source.media.split("/");
+    file_name = file_name[file_name.length - 1];
+    file_name = file_name.split(".")[0];
+    win.id = source.id || file_name;
+    if (source.window === undefined || source.window) {
+      win.className = "window window-video " + sequence.id;
+      win.innerHTML = titlebar;
+    } else {
+      win.className = "window-container";
+    }
+    win.insertAdjacentElement("beforeend", subelement);
+
+    let once = source.once == undefined ? false : source.once;
+    let persist = source.persist == undefined ? false : source.persist;
+    if (once) {
+      subelement.loop = false;
+      if (!persist) {
+        subelement.addEventListener(
+          "ended",
+          () => {
+            desktop.hide(win);
+          },
+          { once: true },
+        );
+      }
+    }
     return win;
   },
 
@@ -158,6 +279,8 @@ let desktop = {
       await new Promise((r) => setTimeout(r, 50));
       document.querySelector(selector + " progress").value = progress;
     }
+
+    document.querySelector(selector + " progress").value = 100;
     if (hide) {
       desktop.hide(selector);
     }
@@ -169,7 +292,9 @@ let desktop = {
   },
 
   clearVideos: function () {
+    document.querySelectorAll(".extra-container").forEach((el) => el.remove());
     document.querySelectorAll(".window-video").forEach((el) => el.remove());
+    document.querySelectorAll(".window-container").forEach((el) => el.remove());
   },
 
   loadWelcome: async function () {
@@ -412,19 +537,18 @@ let desktop = {
     const x_mul = 100 / (columns + 3);
     const y_mul = 100 / (rows + 3);
 
-    return function (win, source) {
-      let desktop_element = document.getElementById("desktop");
-
+    return function (add_to, win, source, hidden = false, arranged = false) {
       requestAnimationFrame(() => {
         win.classList.add("hidden");
-        desktop_element.insertAdjacentElement("beforeend", win);
+        add_to.insertAdjacentElement("beforeend", win);
 
         requestAnimationFrame(() => {
-          var x, y;
           if (source.position) {
-            x = source.position.left;
-            y = source.position.top;
+            win.style.left = source.position.left;
+            win.style.top = source.position.top;
+          } else if (arranged) {
           } else {
+            var x, y;
             let x_jitter = 5 * Math.random();
             let y_jitter = 10 * Math.random();
 
@@ -443,12 +567,15 @@ let desktop = {
 
             x += "%";
             y += "%";
+
+            win.style.left = x;
+            win.style.top = y;
           }
 
           requestAnimationFrame(() => {
-            win.style.left = x;
-            win.style.top = y;
-            desktop.show(win);
+            if (!hidden) {
+              desktop.show(win);
+            }
           });
         });
       });

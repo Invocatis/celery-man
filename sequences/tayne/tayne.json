@@ -1,65 +1,89 @@
-[
-  {
-    "music": null,
-    "clear": true,
-    "prompt": "I have a BETA sequence I have been working on.",
-    "wait": 350
-  },
-  {
-    "prompt": "Would you like to see it?",
-    "waitForSpeech": ["sure", "alright", "all right", "okay"]
-  },
-  {
-    "loading": true,
-    "prompt": "Okay.",
-    "windows": [
-      {
-        "media": "sequences/tayne/imtayne.mp4",
-        "audio": true,
-        "once": true
-      }
-    ],
-    "wait": 6500
-  },
-  {
-    "prompt": "",
-    "title": "Tayne",
-    "clear": true,
-    "windows": [
-      {
-        "id": "tayne1",
-        "media": "sequences/tayne/tayne1.mp4",
-        "position": { "top": "20%", "left": "55%" }
-      },
-      {
-        "id": "tayne2",
-        "media": "sequences/tayne/tayne2.mp4",
-        "position": { "top": "20%", "left": "5%" }
-      },
-      {
-        "id": "tayne18",
-        "media": "sequences/tayne/tayne18.png",
-        "position": { "top": "30%", "left": "30%" }
-      }
-    ]
-  },
-  {
-    "title": "Tayne",
-    "clear": true,
-    "music": "sequences/tayne/tayne.mp3",
-    "windows": [
-      {
-        "media": "sequences/tayne/tayne3.mp4",
-        "position": { "top": "30%", "left": "15%" }
-      },
-      {
-        "media": "sequences/tayne/tayne3.mp4",
-        "position": { "top": "30%", "left": "40%" }
-      },
-      {
-        "media": "sequences/tayne/tayne3.mp4",
-        "position": { "top": "30%", "left": "65%" }
-      }
-    ]
-  }
-]
+{
+  "frames": [
+    {
+      "music": null,
+      "clear": true,
+      "prompt": "I have a BETA sequence I have been working on.",
+      "wait": 350
+    },
+    {
+      "prompt": "Would you like to see it?",
+      "waitForSpeech": ["sure", "alright", "all right", "okay"]
+    },
+    {
+      "loading": true,
+      "prompt": "Okay.",
+      "title": "Tayne",
+      "clear": true,
+      "ordered": true,
+      "wait": ["videoend", 1500],
+      "arranged": true,
+      "hidePrompt": true,
+      "container": true,
+      "windows": [
+        {
+          "time": 0,
+          "media": "imtayne.mp4",
+          "audio": true,
+          "once": true
+        },
+        {
+          "time": 1350,
+          "media": "taynepink.jpg"
+        },
+        {
+          "time": 2200,
+          "media": "boing.webm",
+          "window": false,
+          "once": true,
+          "persist": true
+        }
+      ]
+    },
+    {
+      "prompt": "",
+      "title": "Tayne",
+      "hidePrompt": true,
+      "clear": true,
+      "wait": 10000,
+      "arranged": true,
+      "music": "tayne.mp3",
+      "windows": [
+        {
+          "media": "tayne18.png"
+        },
+        {
+          "media": "tayne1.mp4"
+        },
+        {
+          "media": "tayne2.mp4"
+        }
+      ]
+    },
+    {
+      "title": "Tayne",
+      "hidePrompt": true,
+      "clear": true,
+      "arranged": true,
+      "music": "tayne.mp3",
+      "sync": true,
+      "windows": [
+        {
+          "media": "tayne3.mp4",
+          "id": "tayne3-0",
+          "time": 250
+        },
+        {
+          "media": "tayne3.mp4",
+          "id": "tayne3-1",
+          "time": 255
+        },
+        {
+          "media": "tayne3.mp4",
+          "id": "tayne3-2",
+          "time": 260
+        }
+      ]
+    }
+  ]
+}

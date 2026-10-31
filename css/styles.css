@@ -15,19 +15,19 @@ html {
 }
 
 .hidden {
-    display: none !important;
+    visibility: hidden !important;
 }
 
 /******************************************************* desktop */
 
 #desktop {
+    position: fixed;
     background-color: #00a9d5;
     font-family: sans-serif;
     font-size: 11px;
     font-style: normal;
     font-weight: 400;
     height: 100%;
-    position: fixed;
     width: 100%;
 }
 
@@ -45,34 +45,6 @@ html {
     );
 }
 
-/******************************************************* desktop icons */
-
-.desktop-icon {
-    cursor: pointer;
-    color: black;
-    display: block;
-    height: 4rem;
-    position: relative;
-    margin: 1rem;
-    width: 5rem;
-}
-
-.icon-cinco {
-    background: url(../img/folder.png) no-repeat 50% 50%;
-}
-
-.icon-original {
-    background: url(../img/cd.png) no-repeat 50% 50%;
-}
-
-.desktop-icon .title {
-    bottom: 0;
-    display: block;
-    position: absolute;
-    text-align: center;
-    width: 5rem;
-}
-
 /******************************************************* global design */
 .window {
     background: #edeced;
@@ -87,7 +59,8 @@ html {
     text-align: center;
 }
 
-.window.hiding {
+.window-container {
+    position: absolute;
 }
 
 .window-content {
@@ -97,17 +70,24 @@ html {
 }
 
 .window-video {
-    min-width: 400px;
-    max-width: 400px;
+    min-width: 20%;
+    max-width: 200px;
     transform-origin: center;
+}
+
+.window-video.original {
+    min-width: 0;
+    max-width: 10000;
 }
 
 .window-video video {
     width: 100%;
+    object-fit: contain;
 }
 
 .window-video img {
     width: 100%;
+    object-fit: contain;
 }
 
 .window h3 {
@@ -123,16 +103,6 @@ html {
     }
     to {
         transform: scale(1);
-    }
-}
-
-.flash {
-    animation: flash 0.15s;
-}
-
-@keyframes flash {
-    to {
-        background: radial-gradient(circle at center, white, rgba(0, 0, 0, 0));
     }
 }
 
@@ -335,4 +305,38 @@ html {
 #warning h2 {
     font-size: 80pt;
     margin-top: 10%;
+}
+
+/******************************************************* Video Flash */
+
+.flash {
+    position: absolute;
+    background: radial-gradient(circle, #adf 0%, transparent 100%);
+    left: 0%;
+    top: 0%;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform: scale(0);
+}
+
+.flash.up {
+    animation: flash-up 250ms ease-out forwards;
+}
+
+.flash.down {
+    transform: scale(10);
+    animation: flash-down 250ms ease-out forwards;
+}
+
+@keyframes flash-up {
+    to {
+        transform: scale(10);
+    }
+}
+
+@keyframes flash-down {
+    to {
+        transform: scale(0);
+    }
 }

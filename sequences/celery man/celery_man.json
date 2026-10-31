@@ -4,17 +4,39 @@
   "prompt": "Yes, Paul.",
   "beep": true,
   "clear": true,
-  "music": "audio/music/celery.mp3",
+  "music": "celery.mp3",
+  "ordered": true,
+  "sync": true,
+  "arranged": true,
+  "async": true,
   "windows": [
     {
-      "id": "celery3",
-      "media": "celery3.mp4",
-      "position": { "top": "10%", "left": "55%" }
+      "time": 0,
+      "media": "celerytall1.mp4"
     },
     {
-      "id": "celery4",
-      "media": "celery4.mp4",
-      "position": { "top": "15%", "left": "10%" }
+      "time": 2400,
+      "media": "celery1.mp4"
+    },
+    {
+      "time": 8000,
+      "swap": "celerytall1",
+      "media": "celerytall2.mp4"
+    },
+    {
+      "time": 8000,
+      "swap": "celery1",
+      "media": "celery2.mp4"
+    },
+    {
+      "time": 16000,
+      "swap": "celerytall1",
+      "media": "toetaptall.mp4"
+    },
+    {
+      "time": 16000,
+      "swap": "celery1",
+      "media": "toetap.mp4"
     }
   ]
 }

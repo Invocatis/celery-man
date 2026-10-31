@@ -15,6 +15,7 @@ let command = {
     [/new sequence/, "load sequence tayne"],
     [/^(?!.*load.*nude)^(?!.*add sequence.*nude)nude/, "engage nsfw"],
     [/generate/, "engage"],
+    [/can i get/, "engage"],
     [/(4|d|3|\s+){4,}/, "4d3d3d3"],
     [/boot/, "load"],
   ],
@@ -30,7 +31,14 @@ let command = {
     [/and net|in net/, "annette"],
     [/devin|devon/, "devan"],
     [/doctor/, "dr"],
+    [/hot/, "hat"],
   ],
+
+  get_mode: function (sequence, command_string) {
+    return Object.entries(sequence.modes)
+      .filter(([name, _]) => command_string.includes(name))
+      .map(([name, mode]) => mode);
+  },
 
   executors: {
     clear: () => {
@@ -51,12 +59,8 @@ let command = {
 
       if (sequence.length > 0) {
         sequence = sequence[0];
-        let mode = !Array.isArray(sequence)
-          ? Object.entries(sequence.modes)
-              .filter(([name, _]) => command_string.includes(name))
-              .map(([name, mode]) => mode)
-          : undefined;
-        if (mode && mode.length > 0) {
+        modes = command.get_mode(sequence, command_string);
+        if (modes.length > 0) {
           state.sequence = mode[0];
         } else {
           state.sequence = sequence;
@@ -89,12 +93,11 @@ let command = {
         .filter(([name, _]) => command_string.includes(name))
         .map(([name, sequence]) => sequence)[0];
 
-      let mode = Object.entries(sequence.modes)
-        .filter(([name, _]) => command_string.includes(name))
-        .map(([name, mode]) => mode)[0];
+      let modes = command.get_mode(sequence, command_string);
 
       var file;
-      if (mode) {
+      if (modes.length > 0) {
+        let mode = modes[0];
         file = util.selectRandom(
           mode.windows
             .filter((w) => w.media.endsWith(".jpg") || w.media.endsWith(".png"))
@@ -117,6 +120,8 @@ let command = {
   },
 
   execute: async function (command_string) {
+    chaos.enact_chaos();
+    chaos.increment_chaos();
     command_string = command_string.toLowerCase();
     console.log("execute: " + command_string);
     if (

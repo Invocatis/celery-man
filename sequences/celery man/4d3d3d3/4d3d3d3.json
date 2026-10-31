@@ -4,14 +4,17 @@
   "loading": false,
   "autoType": "add sequence: OYSTER",
   "clearTextPrompt": false,
+  "sync": true,
   "windows": [
     {
-      "media": "celery1.mp4",
-      "position": { "top": "10%", "left": "10%" }
+      "media": "4d3d3d3.mp4",
+      "swap": "celery1",
+      "time": 400
     },
     {
-      "media": "celery2.mp4",
-      "position": { "top": "10%", "left": "45%" }
+      "media": "4d3d3d3tall.mp4",
+      "swap": "celerytall1",
+      "time": 400
     }
   ]
 }

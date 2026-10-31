@@ -1,0 +1,75 @@
+/* Tayne Boing */
+
+.window.tayne {
+    min-width: 400px;
+    max-width: 400px;
+}
+
+#tayne-container {
+    width: 1024px;
+    height: 768px;
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    transform: translate(-50%, -50%);
+}
+
+#tayne-container > * {
+    position: relative;
+}
+
+[id="imtayne"] {
+    left: 51%;
+    top: 3%;
+}
+
+[id="boing"] {
+    transform-origin: center;
+    left: 19.5%;
+    top: -162%;
+    transform: scale(0.8);
+}
+
+[id="boing"] video {
+    height: 900px;
+    width: auto;
+    transform-origin: center;
+}
+
+/* Tayne Pink*/
+[id="taynepink"] {
+    min-width: unset !important;
+    max-width: unset !important;
+    width: max-content;
+    height: max-content;
+    top: -55%;
+    left: 11%;
+    transform: scale(0.9);
+}
+
+[id="taynepink"] img {
+    width: unset !important;
+}
+
+#tayne18 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+}
+
+#tayne1 {
+    right: 0%;
+}
+
+#tayne3-0 {
+    left: 0%;
+}
+
+#tayne3-1 {
+    left: 50%;
+    transform: translate(-50%);
+}
+
+#tayne3-2 {
+    right: 0%;
+}

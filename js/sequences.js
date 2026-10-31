@@ -7,30 +7,34 @@ var sequences = {
     music: null,
     prompt: "",
   },
-  base: [
-    {
-      prompt: "Good morning, Paul.",
-      wait: 500,
-    },
-    {
-      prompt: "What will your first sequence of the day be?",
-    },
-  ],
-  nsfw: [
-    {
-      prompt: "This is not suitable for work",
-      warning: true,
-      wait: 500,
-      music: null,
-      warning: true,
-    },
-    {
-      prompt: "Are you sure?",
-      warning: true,
-      waitForAffirmation: true,
-      warning: true,
-    },
-  ],
+  base: {
+    frames: [
+      {
+        prompt: "Good morning, Paul.",
+        wait: 500,
+      },
+      {
+        prompt: "What will your first sequence of the day be?",
+      },
+    ],
+  },
+  nsfw: {
+    frames: [
+      {
+        prompt: "This is not suitable for work",
+        warning: true,
+        wait: 500,
+        music: null,
+        warning: true,
+      },
+      {
+        prompt: "Are you sure?",
+        warning: true,
+        waitForAffirmation: true,
+        warning: true,
+      },
+    ],
+  },
 };
 
 let sequence = {
@@ -43,6 +47,7 @@ let sequence = {
     let visualMedia = files.filter(
       (x) =>
         x.name.endsWith(".mp4") ||
+        x.name.endsWith(".webm") ||
         x.name.endsWith(".png") ||
         x.name.endsWith(".jpg"),
     );
@@ -72,7 +77,46 @@ let sequence = {
     let f = files.filter((x) => x.name.endsWith(".json"));
     var sequence_stub = {};
 
-    let nsfw = title == "nude";
+    // ADD CSS
+    files
+      .filter((f) => f.name.endsWith(".css"))
+      .forEach((f) => {
+        const style = document.createElement("link");
+        style.rel = "stylesheet";
+        style.href = root + f.name;
+        document.head.append(style);
+      });
+
+    let nsfw = title == "nude" || title == "nsfw";
+
+    let parseFromFile = function (sequence_stub) {
+      if (sequence_stub.frames) {
+        sequence_stub.frames = sequence_stub.frames.map(parseFromFile);
+        return sequence_stub;
+      }
+      if (sequence_stub.windows) {
+        sequence_stub.windows.forEach((w) => (w.media = root + w.media));
+      }
+
+      let file_name = path[path.length - 1].split(".")[0];
+      sequence_stub.id = file_name.replace(" ", "-");
+      sequence_stub.title = sequence_stub.title || path[path.length - 1];
+      sequence_stub.loading =
+        sequence_stub.loading === undefined ? false : sequence_stub.loading;
+      sequence_stub.modes = sequence_stub.modes || modes;
+      sequence_stub.nsfw = sequence_stub.nsfw || nsfw;
+      if (sequence_stub.music) {
+        sequence_stub.music = root + sequence_stub.music;
+      }
+
+      if (sequence_stub.nsfw) {
+        sequence_stub.audio = "audio/computer/nsfw.mp3";
+        sequence_stub.prompt = null;
+        sequence_stub.clear = true;
+      }
+
+      return sequence_stub;
+    };
 
     if (f.length != 0) {
       let r = await fetch(root + f[0].name);
@@ -81,20 +125,11 @@ let sequence = {
 
       sequence_stub = JSON.parse(body);
 
-      if (sequence_stub.windows) {
-        sequence_stub.windows.forEach((w) => (w.media = root + w.media));
+      if (Array.isArray(sequence_stub)) {
+        sequence_stub = sequence_stub.map((s) => parseFromFile(s));
+      } else {
+        sequence_stub = parseFromFile(sequence_stub);
       }
-
-      sequence_stub.title = sequence_stub.title || path[path.length - 1];
-      sequence_stub.music =
-        sequence_stub.music || music.length > 0 ? root + music[0].name : "";
-      sequence_stub.windows = sequence_stub.windows || windows;
-      sequence_stub.loading =
-        sequence_stub.loading === undefined ? false : sequence_stub.loading;
-      sequence_stub.modes = sequence_stub.modes || modes;
-      sequence_stub.prompt =
-        sequence_stub.prompt === null ? null : sequence_stub.prompt || "random";
-      sequence_stub.nsfw = sequence_stub.nsfw || nsfw;
     } else {
       if (title == "nude") {
         let who = path[path.length - 2];
@@ -102,6 +137,7 @@ let sequence = {
       }
 
       sequence_stub = {
+        id: path.join(".").replace(" ", "-"),
         title: title,
         music: music.length > 0 ? root + music[0].name : "",
         windows: windows,
@@ -112,12 +148,6 @@ let sequence = {
       };
     }
 
-    if (sequence_stub.nsfw) {
-      sequence_stub.audio = "audio/computer/nsfw.mp3";
-      sequence_stub.prompt = null;
-      sequence_stub.clear = true;
-    }
-
     return sequence_stub;
   },
 
@@ -126,7 +156,7 @@ let sequence = {
     let response = await fetch("/sequences/");
 
     if (response.status === 404) {
-      state.sequences = default_sequences;
+      sequences = default_sequences;
     } else {
       let folders = await response.json();
 

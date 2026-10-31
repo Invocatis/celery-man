@@ -8,6 +8,7 @@ var state = {
   booted: false,
   listening: false,
   listen: [],
+  promptHidden: true,
 };
 
 var application = {
@@ -21,8 +22,11 @@ var application = {
   ],
 
   renderSequence: async function (sequence) {
-    if (Array.isArray(sequence)) {
-      for (s of sequence) {
+    if (sequence != sequences.base) {
+      desktop.hide("#window-welcome");
+    }
+    if (sequence.frames) {
+      for (s of sequence.frames) {
         await application.renderSingleSequence(s);
       }
     } else {
@@ -32,18 +36,28 @@ var application = {
 
   renderSingleSequence: async function (sequence) {
     desktop.lock();
+
     if (sequence.music == null) {
       music.fadeOut();
     }
 
     if (sequence.nsfw) {
-      await application.renderSequence(sequences.nsfw);
+      await application.renderSequence(sequence.nsfw);
     }
 
     if (sequence.warning && !state.warning) {
       desktop.warning();
     } else if (!sequence.warning) {
       state.warning = false;
+    }
+
+    if (sequence.hidePrompt) {
+      desktop.hide("#window-prompt");
+      state.promptHidden = true;
+    } else if (state.promptHidden) {
+      state.promptHidden = false;
+      desktop.changeTextPrompt("");
+      desktop.show("#window-prompt");
     }
 
     if (sequence.prompt == "random") {
@@ -81,13 +95,37 @@ var application = {
       // application.flashVideos();
     }
 
+    var windows;
+
     if (sequence.windows) {
       console.log(sequence.windows);
-      desktop.addWindows(
-        sequence.title,
-        sequence.windows.slice(0, 5),
-        sequence.nsfw == null ? true : !sequence.nsfw,
-      );
+      var w = sequence.windows;
+
+      if (!sequence.ordered) {
+        w = w.slice(0, 5);
+        util.shuffle(w);
+      }
+
+      if (sequence.async) {
+        async function run() {
+          var promise;
+          [windows, promise] = desktop.addWindows(
+            sequence,
+            w,
+            !sequence.ordered,
+          );
+
+          promise.then(() => {
+            if (sequence.loop && state.sequence === sequence) run();
+          });
+        }
+
+        run();
+      } else {
+        var promise;
+        [windows, promise] = desktop.addWindows(sequence, w, !sequence.ordered);
+        await promise;
+      }
 
       if (sequence.windows.length > 5) {
         desktop.cycleWindows(sequence);
@@ -95,13 +133,37 @@ var application = {
     }
 
     if (sequence.music) {
-      console.log(sequence.music);
       music.start(sequence.music);
     }
 
-    if (sequence.wait) {
-      await new Promise((r) => setTimeout(r, sequence.wait));
+    function wait(wait_def) {
+      if (Array.isArray(wait_def)) {
+        return wait_def.reduce(
+          (a, b) => a.then(() => wait(b)),
+          Promise.resolve(),
+        );
+      } else if (Number.isInteger(wait_def)) {
+        return new Promise((r) => setTimeout(r, wait_def));
+      } else if (wait_def === "videoend") {
+        let promises = [];
+        let videos = windows
+          .map((w) => w.querySelector("video"))
+          .filter((v) => v);
+        for (let video of videos) {
+          let promise = new Promise((resolve) => {
+            video.addEventListener("ended", () => {
+              resolve();
+            });
+          });
+
+          promises.push(promise);
+        }
+
+        return Promise.all(promises);
+      }
     }
+
+    await wait(sequence.wait);
 
     if (sequence.waitForSpeech) {
       await voice_recognition.listen_for(sequence.waitForSpeech);
@@ -125,19 +187,19 @@ var application = {
       }
     });
 
-    document.querySelector("#desktop").addEventListener(
-      "touchstart",
-      (event) => {
-        desktop.boot();
-        document
-          .querySelector("#window-prompt")
-          .addEventListener("touchstart", () => {
-            sounds.prompt();
-            voice_recognition.listen();
-          });
-      },
-      { once: true },
-    );
+    // document.querySelector("#desktop").addEventListener(
+    //   "touchstart",
+    //   (event) => {
+    //     if (!state.booted) desktop.boot();
+    //     document
+    //       .querySelector("#window-prompt")
+    //       .addEventListener("touchstart", () => {
+    //         sounds.prompt();
+    //         voice_recognition.listen();
+    //       });
+    //   },
+    //   { once: true },
+    // );
 
     sequence.loadExternalSequences();
   },
