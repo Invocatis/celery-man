@@ -157,8 +157,6 @@ let desktop = {
     const flash = document.createElement("div");
     flash.className = "flash up";
     win.appendChild(flash);
-    console.log(flash);
-    console.log(win);
     flash.addEventListener("animationend", (e) => {
       if (e.animationName === "flash-up") {
         inbetween();
@@ -495,32 +493,37 @@ let desktop = {
     let desktop = document.querySelector("#desktop");
 
     let id = setInterval(() => {
-      top += step;
-      left += step;
+      try {
+        top += step;
+        left += step;
 
-      let w = window.cloneNode(true);
+        let w = window.cloneNode(true);
 
-      let srcObject = window.querySelector(".media").captureStream();
-      let media = w.querySelector(".media");
+        let srcObject = window.querySelector(".media").captureStream();
+        let media = w.querySelector(".media");
 
-      if (media.matches("video")) {
-        media.removeAttribute("src");
-        media.srcObject = srcObject;
-      }
+        if (media.matches("video")) {
+          media.removeAttribute("src");
+          media.srcObject = srcObject;
+        }
 
-      window.style.left = left + "%";
-      window.style.top = top + "%";
+        window.style.left = left + "%";
+        window.style.top = top + "%";
 
-      trail_windows.push(w);
+        trail_windows.push(w);
 
-      window.before(w);
+        window.before(w);
 
-      if (trail_windows.length > trail) {
-        let win = trail_windows.shift();
-        win.remove();
-      }
+        if (trail_windows.length > trail) {
+          let win = trail_windows.shift();
+          win.remove();
+        }
 
-      if (direction === "right" && left >= x) {
+        if (direction === "right" && left >= x) {
+          clearInterval(id);
+        }
+      } catch (exception) {
+        console.log(exception);
         clearInterval(id);
       }
     }, tick);
@@ -575,6 +578,10 @@ let desktop = {
           requestAnimationFrame(() => {
             if (!hidden) {
               desktop.show(win);
+              let video = win.querySelector("video");
+              if (video != null) {
+                video.play();
+              }
             }
           });
         });

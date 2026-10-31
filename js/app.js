@@ -51,15 +51,6 @@ var application = {
       state.warning = false;
     }
 
-    if (sequence.hidePrompt) {
-      desktop.hide("#window-prompt");
-      state.promptHidden = true;
-    } else if (state.promptHidden) {
-      state.promptHidden = false;
-      desktop.changeTextPrompt("");
-      desktop.show("#window-prompt");
-    }
-
     if (sequence.prompt == "random") {
       let prompt = util
         .selectRandom(application.sequenceLoadingStatements)
@@ -73,6 +64,15 @@ var application = {
     if (sequence.loading) {
       console.log("loading ...");
       await desktop.loadingWindow("#window-loader");
+    }
+
+    if (sequence.hidePrompt) {
+      desktop.hide("#window-prompt");
+      state.promptHidden = true;
+    } else if (state.promptHidden) {
+      state.promptHidden = false;
+      desktop.changeTextPrompt("");
+      desktop.show("#window-prompt");
     }
 
     if (sequence.audio) {
@@ -91,8 +91,8 @@ var application = {
       sounds.beep();
     }
 
-    if (sequence.flash) {
-      // application.flashVideos();
+    if (sequence.music) {
+      music.start(sequence.music);
     }
 
     var windows;
@@ -132,10 +132,6 @@ var application = {
       }
     }
 
-    if (sequence.music) {
-      music.start(sequence.music);
-    }
-
     function wait(wait_def) {
       if (Array.isArray(wait_def)) {
         return wait_def.reduce(
@@ -152,6 +148,7 @@ var application = {
         for (let video of videos) {
           let promise = new Promise((resolve) => {
             video.addEventListener("ended", () => {
+              console.log("ENDED");
               resolve();
             });
           });
@@ -184,6 +181,8 @@ var application = {
         document.activeElement.id != "command-input"
       ) {
         desktop.boot();
+
+        sequence.loadExternalSequences();
       }
     });
 
@@ -200,7 +199,5 @@ var application = {
     //   },
     //   { once: true },
     // );
-
-    sequence.loadExternalSequences();
   },
 };

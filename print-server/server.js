@@ -6,7 +6,7 @@ Bun.serve({
     let file = url.pathname.slice("/print".length);
     console.log(file);
 
-    const asdf = Bun.spawn(["lpstat", "-a"], {stdout: "inherit"});
+    const asdf = Bun.spawn(["lpstat", "-a"], { stdout: "inherit" });
 
     const proc = Bun.spawn(["lp", "-d", "Xerox-Phaser-6022", "." + file]);
 

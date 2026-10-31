@@ -52,55 +52,91 @@ let voice_recognition = {
     return promise;
   },
 
-  listen_to_all: function () {
+  grammar: function () {
+    let commands = Object.keys(command.executors);
+    let sequence_names = Object.keys(sequences);
+    let modes = Object.values(sequences)
+      .map((x) => (x.modes ? Object.keys(x.modes) : []))
+      .flat();
+
+    return JSON.stringify([
+      ...commands,
+      ...sequence_names,
+      ...modes,
+      ...command.curseWords,
+      ...Object.keys(voice_recognition.aliases),
+      "computer",
+      "[unk]",
+    ]);
+  },
+  aliases: {
+    "kick up": "engage",
+    "new sequence": "load sequence tayne",
+    generate: "engage",
+    "can i get": "engage",
+    "four d three d three d three": "4d3d3d3",
+    boot: "load",
+  },
+
+  misheardWords: [
+    [/at sequence/, "add sequence"],
+    [/call/, "kyle"],
+    [/sequins/, "sequence"],
+    [/cabin/, "gavin"],
+    [/little/, "load up"],
+    [/tain|ten|10|chain/, "tayne"],
+    [/connor/, "conor"],
+    [/and net|in net/, "annette"],
+    [/devin|devon/, "devan"],
+    [/doctor/, "dr"],
+    [/hot/, "hat"],
+    [/oasis/, "oyster"],
+  ],
+
+  recognition_mapping: {
+    "four d three d three d three": "4d3d3d3",
+  },
+
+  listen_to_all: async function () {
     console.log("listening ...");
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const model = await Vosk.createModel("vosk-model-small-en-us-0.15.tar.gz");
+    const rec = new model.KaldiRecognizer(16000, voice_recognition.grammar());
 
-    if (!SpeechRecognition) {
-      status.textContent = "Speech recognition is unsupported.";
-    } else {
-      const recognition = new SpeechRecognition();
+    rec.on("result", (m) => {
+      let transcript = m.result.text.toLowerCase().trim();
 
-      recognition.lang = "en-US";
-      recognition.continuous = true;
-      recognition.interimResults = false;
-
-      recognition.onresult = async (event) => {
-        let transcript = event.results[event.results.length - 1][0].transcript
-          .toLowerCase()
-          .trim();
-
-        console.log("heard: " + transcript);
-
-        if (state.listening) {
-          await command.execute(transcript);
-          state.listening = false;
-        } else {
-          state.listen.forEach(([trigger, callback]) => {
-            if (typeof trigger === "string" && trigger === transcript) {
-              callback();
-            } else if (trigger instanceof RegExp && trigger.test(transcript)) {
-              callback(transcript);
-            }
-          });
+      for (let [from, to] of Object.entries(voice_recognition.aliases)) {
+        if (transcript.includes(from)) {
+          transcript = transcript.replace(from, to);
         }
-      };
+      }
 
-      var error;
+      voice_recognition.handle_result(transcript);
+    });
 
-      recognition.onerror = (event) => {
-        error = event.error;
-        console.log("Error: " + event.error);
-      };
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const ctx = new AudioContext({ sampleRate: 16000 });
+    const src = ctx.createMediaStreamSource(stream);
+    const node = ctx.createScriptProcessor(4096, 1, 1);
+    node.onaudioprocess = (e) => rec.acceptWaveform(e.inputBuffer);
+    src.connect(node);
+    node.connect(ctx.destination);
+  },
+  handle_result: async function (transcript) {
+    console.log("heard: " + transcript);
 
-      recognition.onend = () => {
-        console.log("Stopped.");
-        if (!error || error === "no-speach") voice_recognition.listen_to_all();
-      };
-
-      recognition.start();
+    if (state.listening) {
+      await command.execute(transcript);
+      state.listening = false;
+    } else {
+      state.listen.forEach(([trigger, callback]) => {
+        if (typeof trigger === "string" && trigger === transcript) {
+          callback();
+        } else if (trigger instanceof RegExp && trigger.test(transcript)) {
+          callback(transcript);
+        }
+      });
     }
   },
 };

@@ -5,6 +5,7 @@
   "autoType": "add sequence: OYSTER",
   "clearTextPrompt": false,
   "sync": true,
+  "music": "4d3d3d3.mp3",
   "windows": [
     {
       "media": "4d3d3d3.mp4",

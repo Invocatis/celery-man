@@ -1,25 +1,25 @@
 {
   "title": "Oyster",
   "prompt": "add sequence: OYSTER",
-  "music": "audio/music/oyster.mp3",
+  "music": "oyster.mp3",
   "loading": false,
   "wait": 500,
   "ordered": true,
   "windows": [
     {
-      "time": 500,
+      "time": 200,
       "id": "oyster1",
       "media": "oyster1.mp4",
       "swap": "celery1",
       "addIfNoSwap": true
     },
     {
-      "time": 2200,
+      "time": 1500,
       "id": "oyster2",
       "media": "oyster2.mp4"
     },
     {
-      "time": 2500,
+      "time": 1600,
       "id": "oyster3",
       "media": "oyster3.mp4"
     }

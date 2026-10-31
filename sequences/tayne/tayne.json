@@ -28,7 +28,7 @@
           "once": true
         },
         {
-          "time": 1350,
+          "time": 1250,
           "media": "taynepink.jpg"
         },
         {
@@ -45,17 +45,20 @@
       "title": "Tayne",
       "hidePrompt": true,
       "clear": true,
-      "wait": 10000,
+      "wait": 1000000,
       "arranged": true,
       "music": "tayne.mp3",
       "windows": [
         {
+          "time": 0,
           "media": "tayne18.png"
         },
         {
+          "time": 0,
           "media": "tayne1.mp4"
         },
         {
+          "time": 0,
           "media": "tayne2.mp4"
         }
       ]

@@ -10,31 +10,8 @@ let command = {
     "curse words are the crutch of the intellectually incompetent",
   ],
 
-  aliases: [
-    [/.?ick (up|out)/, "engage"],
-    [/new sequence/, "load sequence tayne"],
-    [/^(?!.*load.*nude)^(?!.*add sequence.*nude)nude/, "engage nsfw"],
-    [/generate/, "engage"],
-    [/can i get/, "engage"],
-    [/(4|d|3|\s+){4,}/, "4d3d3d3"],
-    [/boot/, "load"],
-  ],
-
-  misheardWords: [
-    [/at sequence/, "add sequence"],
-    [/call/, "kyle"],
-    [/sequins/, "sequence"],
-    [/cabin/, "gavin"],
-    [/little/, "load up"],
-    [/tain|ten|10|chain/, "tayne"],
-    [/connor/, "conor"],
-    [/and net|in net/, "annette"],
-    [/devin|devon/, "devan"],
-    [/doctor/, "dr"],
-    [/hot/, "hat"],
-  ],
-
   get_mode: function (sequence, command_string) {
+    if (!sequence.modes) return [];
     return Object.entries(sequence.modes)
       .filter(([name, _]) => command_string.includes(name))
       .map(([name, mode]) => mode);
@@ -130,21 +107,6 @@ let command = {
       desktop.say(util.selectRandom(command.retorts));
       return;
     }
-
-    for (let [from, to] of command.aliases) {
-      if (from.test(command_string)) {
-        command_string += " " + to;
-      }
-    }
-
-    for (let [from, to] of command.misheardWords) {
-      if (from.test(command_string)) {
-        console.log("-------", from, to);
-        command_string = command_string.replace(from, to);
-      }
-    }
-
-    console.log("execute with alias: " + command_string);
 
     let matching = Object.entries(command.executors)
       .map(([key, executor]) => ({

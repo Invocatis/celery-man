@@ -54,22 +54,27 @@
 #tayne18 {
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.5);
+    transform: translate(-50%, -50%);
 }
 
 #tayne1 {
-    right: 0%;
+    right: 10%;
 }
 
 #tayne3-0 {
-    left: 0%;
+    left: 10%;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #tayne3-1 {
     left: 50%;
-    transform: translate(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 #tayne3-2 {
-    right: 0%;
+    right: 10%;
+    top: 50%;
+    transform: translateY(-50%);
 }
