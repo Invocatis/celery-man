@@ -15,6 +15,28 @@ let voice_recognition = {
     "all right",
   ],
 
+  initialize: function () {
+    let trigger_word = () => {
+      console.log("trigger word heard");
+      desktop.say("Yes?");
+      voice_recognition.listen();
+    };
+
+    voice_recognition.listen_for(
+      [/^computer$/],
+      () => trigger_word(),
+      (persist = true),
+    );
+
+    voice_recognition.listen_for(
+      [/^computer/],
+      (result) => command.execute(result),
+      (persist = true),
+    );
+
+    voice_recognition.listen_to_all();
+  },
+
   listen_for_affirmation: function (callback, persist = false) {
     return voice_recognition.listen_for(
       voice_recognition.affirmations,
@@ -76,25 +98,6 @@ let voice_recognition = {
     "can i get": "engage",
     "four d three d three d three": "4d3d3d3",
     boot: "load",
-  },
-
-  misheardWords: [
-    [/at sequence/, "add sequence"],
-    [/call/, "kyle"],
-    [/sequins/, "sequence"],
-    [/cabin/, "gavin"],
-    [/little/, "load up"],
-    [/tain|ten|10|chain/, "tayne"],
-    [/connor/, "conor"],
-    [/and net|in net/, "annette"],
-    [/devin|devon/, "devan"],
-    [/doctor/, "dr"],
-    [/hot/, "hat"],
-    [/oasis/, "oyster"],
-  ],
-
-  recognition_mapping: {
-    "four d three d three d three": "4d3d3d3",
   },
 
   listen_to_all: async function () {

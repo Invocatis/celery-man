@@ -120,7 +120,9 @@ let command = {
     console.log(matching);
 
     if (matching.length === 0) {
-      desktop.say("Malformed command");
+      await desktop.say("not computing");
+      util.sleep(500);
+      await desktop.say("please repeat");
     } else {
       await matching[0](command_string);
     }

@@ -11,6 +11,7 @@ let prerecordings = {
   yes: "yes.mp3",
   "this is not suitable for work": "nsfw.mp3",
   "are you sure": "are_you_sure.mp3",
+  okay: "okay.mp3",
 };
 
 var asdf = null;

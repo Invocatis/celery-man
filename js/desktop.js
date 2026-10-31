@@ -342,6 +342,7 @@ let desktop = {
     await desktop.loadWelcome();
 
     let typing_queue = Promise.resolve();
+    voice_recognition.initialize();
 
     document.addEventListener("keydown", (event) => {
       typing_queue.then(() => {
@@ -389,26 +390,6 @@ let desktop = {
     state.sequence = sequences.base;
 
     await application.renderSequence(sequences.base);
-
-    let trigger_word = () => {
-      console.log("trigger word heard");
-      desktop.say("Yes?");
-      voice_recognition.listen();
-    };
-
-    voice_recognition.listen_for(
-      [/^computer$/],
-      () => trigger_word(),
-      (persist = true),
-    );
-
-    voice_recognition.listen_for(
-      [/^computer/],
-      (result) => command.execute(result),
-      (persist = true),
-    );
-
-    voice_recognition.listen_to_all();
   },
 
   remove: function (selector) {

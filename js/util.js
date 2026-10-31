@@ -15,4 +15,7 @@ let util = {
     for (const c of str) h = (Math.imul(31, h) + c.charCodeAt(0)) | 0;
     return h;
   },
+  sleep: function (time) {
+    new Promise((resolve) => setTimeout(resolve, time));
+  },
 };
